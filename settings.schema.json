@@ -1,0 +1,118 @@
+{
+  "title": {
+    "zh-CN": "Agy Design Studio 设置",
+    "en": "Agy Design Studio Settings"
+  },
+  "fields": [
+    {
+      "key": "showTopbarButton",
+      "type": "boolean",
+      "default": true,
+      "label": {
+        "zh-CN": "显示顶栏 Design 入口",
+        "en": "Show topbar Design capsule"
+      },
+      "description": {
+        "zh-CN": "在 Antigravity 顶栏右侧区域挂载 Design 工作台入口胶囊",
+        "en": "Mount the Design Studio capsule in the topbar right cluster"
+      }
+    },
+    {
+      "key": "openMode",
+      "type": "enum",
+      "default": "embedded",
+      "options": [
+        {
+          "value": "embedded",
+          "label": {
+            "zh-CN": "宿主内嵌工作台（推荐，极速响应）",
+            "en": "Embedded Workbench Drawer (Recommended)"
+          }
+        },
+        {
+          "value": "browser",
+          "label": {
+            "zh-CN": "直接用系统默认浏览器打开",
+            "en": "Open in System Default Browser"
+          }
+        },
+        {
+          "value": "popover",
+          "label": {
+            "zh-CN": "先展开顶栏最近作品快捷卡",
+            "en": "Open Topbar Quick Popover First"
+          }
+        }
+      ],
+      "label": {
+        "zh-CN": "顶栏点击打开方式",
+        "en": "Topbar click behavior"
+      },
+      "description": {
+        "zh-CN": "控制点击顶栏 Design 胶囊时的默认承载容器；内嵌工作台内随时可一键弹出到浏览器",
+        "en": "Default surface when clicking the Design capsule; you can always pop out to browser from the workbench"
+      }
+    },
+    {
+      "key": "shortcut",
+      "type": "string",
+      "default": "Mod+Alt+P",
+      "editorMode": "shortcut",
+      "resetToDefault": true,
+      "label": {
+        "zh-CN": "打开设计工作台快捷键",
+        "en": "Open Design Studio shortcut"
+      },
+      "description": {
+        "zh-CN": "在当前工作区快速唤起或收起设计工作台（留空则禁用快捷键）",
+        "en": "Keyboard shortcut to toggle Design Studio in the active window"
+      }
+    },
+    {
+      "key": "port",
+      "type": "number",
+      "default": 3481,
+      "min": 1024,
+      "max": 65535,
+      "label": {
+        "zh-CN": "本地项目库服务端口",
+        "en": "Local Gallery HTTP port"
+      },
+      "description": {
+        "zh-CN": "仅监听 127.0.0.1；默认 3481 以避开 Orca 设计插件 (3480) 与 Agy-Daddy 内置服务 (18765-18767)",
+        "en": "Loopback 127.0.0.1 port; defaults to 3481 to avoid Orca (3480) and Agy-Daddy services (18765-18767)"
+      }
+    },
+    {
+      "key": "prewarmOnStartup",
+      "type": "boolean",
+      "default": true,
+      "label": {
+        "zh-CN": "启动时后台静默预热本地服务",
+        "en": "Prewarm local server on startup"
+      },
+      "description": {
+        "zh-CN": "插件激活后异步预热本地项目库服务，确保首次点击即可在 500ms 内热开",
+        "en": "Prewarm the local gallery server asynchronously on startup for sub-second first open"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "open-studio",
+      "command": "design.open",
+      "label": {
+        "zh-CN": "立即打开设计工作台",
+        "en": "Open Design Studio Now"
+      }
+    },
+    {
+      "id": "restart-server",
+      "command": "design.restartServer",
+      "label": {
+        "zh-CN": "重启设计工作台本地服务",
+        "en": "Restart Local Gallery Server"
+      }
+    }
+  ]
+}
