@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "id": "hubo1989.design",
+  "publisher": "hubo1989",
+  "version": "0.1.0",
+  "license": "MIT",
+  "displayName": {
+    "zh-CN": "Agy Design Studio",
+    "en": "Agy Design Studio"
+  },
+  "description": {
+    "zh-CN": "本地优先的 Antigravity 可视化设计工作台：统一管理幻灯片、无限画布、设计系统、数据看板与动效五类作品",
+    "en": "Local-first visual design studio for Antigravity: manage slides, canvas, design system, dashboard, and motion projects in one workspace gallery"
+  },
+  "engines": {
+    "agyDaddy": "^1.0.0",
+    "antigravity": ">=2.32.0"
+  },
+  "main": "./src/node.js",
+  "renderer": "./src/renderer.js",
+  "world": "isolated",
+  "dataVersion": 1,
+  "activationEvents": [
+    "onStartup",
+    "onCommand:design.open",
+    "onCommand:design.openBrowser"
+  ],
+  "requires": {
+    "anchors": [
+      "topbar.rightCluster",
+      "composer.editor",
+      "composer.sendButton",
+      "sidebar.conversationRows"
+    ]
+  },
+  "provides": {
+    "services": {
+      "design": {
+        "version": "1.0.0",
+        "realm": "node"
+      }
+    },
+    "events": [
+      "design:prompt-request@1",
+      "design:workspace-changed@1"
+    ],
+    "states": [
+      "state:design.status@1",
+      "state:design.workspace@1"
+    ]
+  },
+  "consumes": {
+    "context": {
+      "version": "^1.0.0",
+      "optional": true
+    }
+  },
+  "permissions": [
+    "dom:read",
+    "dom:write",
+    "rpc:read",
+    "fs:user-files",
+    "net:listen",
+    "process:spawn"
+  ],
+  "contributes": {
+    "topbar.units": [
+      {
+        "id": "design",
+        "order": 48
+      }
+    ],
+    "topbar.popovers": [
+      {
+        "id": "design-quick",
+        "anchorId": "design"
+      }
+    ],
+    "commands": [
+      {
+        "id": "design.open",
+        "title": {
+          "zh-CN": "打开 Agy Design Studio 设计工作台",
+          "en": "Open Agy Design Studio"
+        }
+      },
+      {
+        "id": "design.openBrowser",
+        "title": {
+          "zh-CN": "在系统浏览器中打开设计工作台",
+          "en": "Open Design Studio in Browser"
+        }
+      },
+      {
+        "id": "design.restartServer",
+        "title": {
+          "zh-CN": "重启设计工作台本地服务",
+          "en": "Restart Design Studio Local Server"
+        }
+      },
+      {
+        "id": "design.skill.claude-slides",
+        "title": {
+          "zh-CN": "打开幻灯片编辑器 (Slides)",
+          "en": "Open Slides Editor"
+        }
+      },
+      {
+        "id": "design.skill.claude-design",
+        "title": {
+          "zh-CN": "打开无限画布编辑器 (Canvas)",
+          "en": "Open Canvas Design Editor"
+        }
+      },
+      {
+        "id": "design.skill.claude-design-system",
+        "title": {
+          "zh-CN": "打开设计系统编辑器 (Design System)",
+          "en": "Open Design System Editor"
+        }
+      },
+      {
+        "id": "design.skill.claude-dashboard",
+        "title": {
+          "zh-CN": "打开数据看板编辑器 (Dashboard)",
+          "en": "Open Dashboard Editor"
+        }
+      },
+      {
+        "id": "design.skill.claude-motion",
+        "title": {
+          "zh-CN": "打开动效编辑器 (Motion)",
+          "en": "Open Motion Editor"
+        }
+      }
+    ],
+    "settings": {
+      "schema": "./settings.schema.json"
+    },
+    "locales": "./locales"
+  }
+}

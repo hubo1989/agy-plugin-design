@@ -1,0 +1,27 @@
+[
+  {
+    "file": "skills/claude-slides/SKILL.md",
+    "marker": "<!-- agy-plugin-design:append -->",
+    "text": "## Agy Design Studio (agy-plugin-design) 插件附注\n\n本技能由 `agy-plugin-design` vendored，上游来源见仓库根目录 `vendor/manifest.json`。\n\n项目库入口：Antigravity 顶栏 **Design** 胶囊或快捷键 `Mod+Alt+P`，也可通过命令面板打开对应编辑器。工作流：作品落盘于 `<workspace>/.design/<作品名>/`（与 Orca `orca-plugin-design` 100% 互通），从工作台创建或打开作品后，在嵌入式编辑器中编辑，通过顶部「← 返回工作台」回到项目库；详细用法见仓库根目录 `README.md`。\n\n修改本附注请编辑仓库根目录 `vendor-rewrites.json`，然后运行 `node tools/vendor-baoyu.mjs apply-rewrites`，不要直接修改本文件的附注段；vendor snapshot 会自动重放该附注。"
+  },
+  {
+    "file": "skills/claude-design/SKILL.md",
+    "marker": "<!-- agy-plugin-design:append -->",
+    "text": "## Agy Design Studio (agy-plugin-design) 插件附注\n\n本技能由 `agy-plugin-design` vendored，上游来源见仓库根目录 `vendor/manifest.json`。\n\n项目库入口：Antigravity 顶栏 **Design** 胶囊或快捷键 `Mod+Alt+P`，也可通过命令面板打开对应编辑器。工作流：作品落盘于 `<workspace>/.design/<作品名>/`（与 Orca `orca-plugin-design` 100% 互通），从工作台创建或打开作品后，在嵌入式编辑器中编辑，通过顶部「← 返回工作台」回到项目库；详细用法见仓库根目录 `README.md`。\n\n修改本附注请编辑仓库根目录 `vendor-rewrites.json`，然后运行 `node tools/vendor-baoyu.mjs apply-rewrites`，不要直接修改本文件的附注段；vendor snapshot 会自动重放该附注。"
+  },
+  {
+    "file": "skills/claude-design-system/SKILL.md",
+    "marker": "<!-- agy-plugin-design:append -->",
+    "text": "## Agy Design Studio (agy-plugin-design) 插件附注\n\n本技能由 `agy-plugin-design` vendored，上游来源见仓库根目录 `vendor/manifest.json`。\n\n项目库入口：Antigravity 顶栏 **Design** 胶囊或快捷键 `Mod+Alt+P`，也可通过命令面板打开对应编辑器。工作流：作品落盘于 `<workspace>/.design/<作品名>/`（与 Orca `orca-plugin-design` 100% 互通），从工作台创建或打开作品后，在嵌入式编辑器中编辑，通过顶部「← 返回工作台」回到项目库；详细用法见仓库根目录 `README.md`。\n\n修改本附注请编辑仓库根目录 `vendor-rewrites.json`，然后运行 `node tools/vendor-baoyu.mjs apply-rewrites`，不要直接修改本文件的附注段；vendor snapshot 会自动重放该附注。"
+  },
+  {
+    "file": "skills/claude-dashboard/SKILL.md",
+    "marker": "<!-- agy-plugin-design:append -->",
+    "text": "## Agy Design Studio (agy-plugin-design) 插件附注\n\n本技能由 `agy-plugin-design` vendored，上游来源见仓库根目录 `vendor/manifest.json`。\n\n项目库入口：Antigravity 顶栏 **Design** 胶囊或快捷键 `Mod+Alt+P`，也可通过命令面板打开对应编辑器。工作流：作品落盘于 `<workspace>/.design/<作品名>/`（与 Orca `orca-plugin-design` 100% 互通），从工作台创建或打开作品后，在嵌入式编辑器中编辑，通过顶部「← 返回工作台」回到项目库；详细用法见仓库根目录 `README.md`。\n\n修改本附注请编辑仓库根目录 `vendor-rewrites.json`，然后运行 `node tools/vendor-baoyu.mjs apply-rewrites`，不要直接修改本文件的附注段；vendor snapshot 会自动重放该附注。"
+  },
+  {
+    "file": "skills/claude-motion/SKILL.md",
+    "marker": "<!-- agy-plugin-design:append -->",
+    "text": "## Agy Design Studio (agy-plugin-design) 插件附注\n\n本技能由 `agy-plugin-design` vendored，上游来源见仓库根目录 `vendor/manifest.json`。\n\n项目库入口：Antigravity 顶栏 **Design** 胶囊或快捷键 `Mod+Alt+P`，也可通过命令面板打开对应编辑器。工作流：作品落盘于 `<workspace>/.design/<作品名>/`（与 Orca `orca-plugin-design` 100% 互通），从工作台创建或打开作品后，在嵌入式编辑器中编辑，通过顶部「← 返回工作台」回到项目库；详细用法见仓库根目录 `README.md`。\n\n修改本附注请编辑仓库根目录 `vendor-rewrites.json`，然后运行 `node tools/vendor-baoyu.mjs apply-rewrites`，不要直接修改本文件的附注段；vendor snapshot 会自动重放该附注。"
+  }
+]

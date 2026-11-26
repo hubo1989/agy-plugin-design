@@ -1,0 +1,19 @@
+{
+  "unit.label": "Design",
+  "unit.title": "Open Agy Design Studio",
+  "unit.opening": "Opening…",
+  "workbench.title": "Agy Design Studio",
+  "workbench.openExternal": "Open in Browser ↗",
+  "workbench.toggleExpand": "Toggle Expand / Drawer",
+  "workbench.close": "Close",
+  "workbench.retry": "Retry Launch",
+  "workbench.openSettings": "Change Port Settings",
+  "popover.title": "Recent Design Projects",
+  "popover.openStudio": "Open Full Studio",
+  "popover.empty": "No design projects in the current workspace yet",
+  "error.noWorkspace": "No active local workspace detected. Open a local folder in Antigravity and try again.",
+  "error.remoteWorkspace": "Workspace path is not accessible locally (remote or unmounted). Design Studio supports local workspaces only.",
+  "error.forbiddenPath": "The focused path is a plugin installation or protected system directory. Switch to a project workspace first.",
+  "error.portInUse": "The Design Studio port is occupied by another process. Update the port in plugin settings and retry.",
+  "error.startTimeout": "Design Studio local server timed out or did not respond. Retry launch or check plugin logs."
+}

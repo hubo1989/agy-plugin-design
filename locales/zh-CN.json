@@ -1,0 +1,19 @@
+{
+  "unit.label": "Design",
+  "unit.title": "打开 Agy Design Studio 设计工作台",
+  "unit.opening": "打开中…",
+  "workbench.title": "Agy Design Studio",
+  "workbench.openExternal": "浏览器打开 ↗",
+  "workbench.toggleExpand": "全屏 / 分屏切换",
+  "workbench.close": "关闭",
+  "workbench.retry": "重试启动",
+  "workbench.openSettings": "修改端口设置",
+  "popover.title": "最近设计作品",
+  "popover.openStudio": "打开完整工作台",
+  "popover.empty": "当前工作区暂无设计作品",
+  "error.noWorkspace": "当前未检测到已打开的本机工作区，请在 Antigravity 中打开本地项目文件夹后重试。",
+  "error.remoteWorkspace": "工作区路径在本机不可见（远程工作区或未挂载）。设计工作台当前仅支持本机工作区。",
+  "error.forbiddenPath": "当前工作区为插件安装目录或系统路径，请切换到业务项目工作区后再创建设计作品。",
+  "error.portInUse": "设计工作台端口已被其他程序占用，请在插件设置中修改端口后重试。",
+  "error.startTimeout": "设计工作台本地服务启动超时或未响应，请点击重试或检查插件日志。"
+}
