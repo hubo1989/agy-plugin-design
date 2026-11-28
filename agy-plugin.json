@@ -12,6 +12,24 @@
     "zh-CN": "本地优先的 Antigravity 可视化设计工作台：统一管理幻灯片、无限画布、设计系统、数据看板与动效五类作品",
     "en": "Local-first visual design studio for Antigravity: manage slides, canvas, design system, dashboard, and motion projects in one workspace gallery"
   },
+  "category": "design",
+  "tags": [
+    "design",
+    "slides",
+    "canvas",
+    "design-system",
+    "dashboard",
+    "motion"
+  ],
+  "icon": "./assets/icon.png",
+  "cover": "./assets/cover.png",
+  "screenshots": [
+    "./assets/cover.png",
+    "./assets/gallery.png",
+    "./assets/editor.png"
+  ],
+  "repository": "https://github.com/hubo1989/agy-plugin-design.git",
+  "homepage": "https://github.com/hubo1989/agy-plugin-design#readme",
   "engines": {
     "agyDaddy": "^1.0.0",
     "antigravity": ">=2.32.0"
