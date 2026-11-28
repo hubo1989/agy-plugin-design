@@ -42,6 +42,17 @@ function assert(cond, msg) {
   if (!cond) throw new Error(msg);
 }
 
+function assertRelativeAssetPath(rootDir, relPath, label) {
+  assert(typeof relPath === 'string' && relPath.trim().length > 0, `${label} must be a non-empty relative path`);
+  assert(!path.isAbsolute(relPath) && !relPath.startsWith('/'), `${label} must be a relative path: ${relPath}`);
+  assert(!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(relPath), `${label} must not be a URL or URI: ${relPath}`);
+  assert(!relPath.split(/[\\/]/).includes('..'), `${label} must not contain parent traversal: ${relPath}`);
+  const rootPrefix = rootDir.endsWith(path.sep) ? rootDir : `${rootDir}${path.sep}`;
+  const resolved = path.resolve(rootDir, relPath);
+  assert(resolved.startsWith(rootPrefix), `${label} escapes plugin root: ${relPath}`);
+  assert(fs.existsSync(resolved) && fs.statSync(resolved).isFile(), `${label} file does not exist: ${relPath}`);
+}
+
 function verify() {
   // 1. Package dependencies check
   const pkgPath = path.join(ROOT, 'package.json');
@@ -60,6 +71,12 @@ function verify() {
   for (const perm of manifest.permissions || []) {
     assert(!FORBIDDEN_PERMS.has(perm), `Forbidden permission declared: ${perm}`);
   }
+  assertRelativeAssetPath(ROOT, manifest.icon, 'agy-plugin.json icon');
+  assertRelativeAssetPath(ROOT, manifest.cover, 'agy-plugin.json cover');
+  assert(Array.isArray(manifest.screenshots) && manifest.screenshots.length > 0, 'agy-plugin.json screenshots must be a non-empty array');
+  manifest.screenshots.forEach((shot, idx) => {
+    assertRelativeAssetPath(ROOT, shot, `agy-plugin.json screenshots[${idx}]`);
+  });
 
   // 3. Settings schema validation
   const schemaPath = path.join(ROOT, manifest.contributes?.settings?.schema || 'settings.schema.json');

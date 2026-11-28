@@ -4,12 +4,26 @@
   "private": false,
   "description": "Agy Design Studio — Local-first visual design studio plugin for Google Antigravity (Agy-Daddy microkernel v2)",
   "license": "MIT",
+  "homepage": "https://github.com/hubo1989/agy-plugin-design#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/hubo1989/agy-plugin-design.git"
   },
+  "keywords": [
+    "antigravity",
+    "agy-daddy",
+    "design",
+    "slides",
+    "canvas",
+    "design-system",
+    "dashboard",
+    "motion"
+  ],
   "main": "./src/node.js",
   "agyPlugin": "./agy-plugin.json",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {},
   "files": [
     "agy-plugin.json",

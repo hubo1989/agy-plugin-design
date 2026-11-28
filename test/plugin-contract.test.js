@@ -29,7 +29,52 @@ test('verify.js passes manifest, settings, 9-color gate, license notices, and ve
   const parsed = JSON.parse(out);
   assert.equal(parsed.ok, true);
   assert.equal(parsed.id, 'hubo1989.design');
-  assert.match(parsed.manifestSha512, /^sha512-[A-Za-z0-9+/=]{86,88}$/);
+  assert.equal(
+    parsed.manifestSha512,
+    'sha512-bhXf+Mm4sFdhBDRmfvwZ+kDJijkAEKxeHqm4h+fk4joSC2E/aNZVKTp2LpYBqemuhAHx/OWjCb/Nzn15SQOT2A=='
+  );
+});
+
+test('marketplace metadata in agy-plugin.json and package.json matches registry contract', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(PLUGIN_ROOT, 'agy-plugin.json'), 'utf8'));
+  assert.equal(manifest.category, 'design');
+  assert.deepEqual(manifest.tags, ['design', 'slides', 'canvas', 'design-system', 'dashboard', 'motion']);
+  assert.equal(manifest.icon, './assets/icon.png');
+  assert.equal(manifest.cover, './assets/cover.png');
+  assert.deepEqual(manifest.screenshots, ['./assets/cover.png', './assets/gallery.png', './assets/editor.png']);
+  assert.equal(manifest.repository, 'https://github.com/hubo1989/agy-plugin-design.git');
+  assert.equal(manifest.homepage, 'https://github.com/hubo1989/agy-plugin-design#readme');
+
+  const pkg = JSON.parse(fs.readFileSync(path.join(PLUGIN_ROOT, 'package.json'), 'utf8'));
+  assert.equal(pkg.type, undefined);
+  assert.deepEqual(pkg.dependencies, {});
+  assert.equal(pkg.homepage, 'https://github.com/hubo1989/agy-plugin-design#readme');
+  assert.deepEqual(pkg.keywords, ['antigravity', 'agy-daddy', 'design', 'slides', 'canvas', 'design-system', 'dashboard', 'motion']);
+  assert.deepEqual(pkg.publishConfig, { access: 'public' });
+  assert.equal(pkg.files.length, 14);
+  assert.equal(pkg.files.includes('test/'), false);
+});
+
+test('verify.js rejects missing or escaping marketplace asset paths', () => {
+  const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'agy-design-verify-assets-'));
+  try {
+    for (const rel of ['package.json', 'agy-plugin.json', 'settings.schema.json', 'LICENSE', 'NOTICE.md', 'README.md', 'vendor-rewrites.json']) {
+      fs.copyFileSync(path.join(PLUGIN_ROOT, rel), path.join(tempRoot, rel));
+    }
+    for (const dir of ['locales', 'src', 'tools', 'templates', 'references', 'assets', 'vendor']) {
+      fs.cpSync(path.join(PLUGIN_ROOT, dir), path.join(tempRoot, dir), { recursive: true });
+    }
+    const manPath = path.join(tempRoot, 'agy-plugin.json');
+    const baseManifest = JSON.parse(fs.readFileSync(manPath, 'utf8'));
+
+    fs.writeFileSync(manPath, JSON.stringify({ ...baseManifest, icon: './assets/missing.png' }, null, 2) + '\n');
+    assert.throws(() => execFileSync(process.execPath, [path.join(PLUGIN_ROOT, 'scripts', 'verify.js'), tempRoot], { stdio: 'pipe' }));
+
+    fs.writeFileSync(manPath, JSON.stringify({ ...baseManifest, screenshots: ['../escape.png'] }, null, 2) + '\n');
+    assert.throws(() => execFileSync(process.execPath, [path.join(PLUGIN_ROOT, 'scripts', 'verify.js'), tempRoot], { stdio: 'pipe' }));
+  } finally {
+    fs.rmSync(tempRoot, { recursive: true, force: true });
+  }
 });
 
 test('manifest declares minimal isolated-world permissions without privileged entitlements', () => {
