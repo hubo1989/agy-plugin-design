@@ -138,22 +138,22 @@
   </div>
 
   <script>
-  // Lakala-Design-Plugin Client Enhancement (Works even when opened directly via file://)
+  // Agy Design Studio Client Enhancement (Works even when opened directly via file://)
   (function() {
     const isFileProto = location.protocol === 'file:';
-    const serverOrigin = 'http://127.0.0.1:3456';
+    const serverOrigin = 'http://127.0.0.1:3481';
     const fileName = location.pathname.split('/').pop() || 'starter.proto.html';
 
     // 1. Show floating switcher pill if opened via file://
     if (isFileProto) {
       const pill = document.createElement('div');
       pill.style.cssText = 'position:fixed;top:54px;right:24px;background:#1e293b;color:#f8fafc;display:flex;align-items:center;gap:12px;font-size:13px;font-family:sans-serif;z-index:999999;padding:10px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);box-shadow:0 10px 30px rgba(0,0,0,0.4);backdrop-filter:blur(10px);';
-      pill.innerHTML = '<span>🎨 <b>Lakala-Design-Plugin:</b> 当前处于本地 file:// 查看模式</span>' +
+      pill.innerHTML = '<span>🎨 <b>Agy Design Studio:</b> 当前处于本地 file:// 查看模式</span>' +
         '<a id="studioSwitchLink" href="' + serverOrigin + '/' + fileName + '" style="color:#ffffff;text-decoration:none;font-weight:600;background:#2563eb;padding:6px 12px;border-radius:6px;box-shadow:0 2px 6px rgba(37,99,235,0.4);display:inline-flex;align-items:center;gap:4px;">进入无限画布工作台 ➔</a>';
       document.body.appendChild(pill);
 
-      // Check server health on 3456
-      fetch(serverOrigin + '/__api/status', { method: 'GET' })
+      // Check server health on 3481
+      fetch(serverOrigin + '/api/health', { method: 'GET' })
         .then(r => r.json())
         .then(res => {
           const link = document.getElementById('studioSwitchLink');
@@ -165,10 +165,10 @@
           const link = document.getElementById('studioSwitchLink');
           if (link) {
             link.style.background = '#475569';
-            link.textContent = '3456 服务离线 (点击查看启动说明) ❓';
+            link.textContent = '3481 服务离线 (点击查看启动说明) ❓';
             link.onclick = function(e) {
               e.preventDefault();
-              alert('【Lakala-Design-Plugin 提示】\n\n后台 3456 原型服务尚未启动。\n\n启动方式（无需快捷键）：\n1. 在 Orca 右侧边栏点击「🎨」图标展开 Lakala-Design-Plugin 面板；\n2. 点击面板上的「打开无限画布工作台」按钮即可自动启动；\n3. 或在 Orca 内置终端中运行：node bin/preview.js');
+              alert('【Agy Design Studio 提示】\n\n本地设计工作台服务尚未启动。\n\n启动方式：\n1. 在 Antigravity 顶栏右侧点击「Design」按钮（或按 Mod+Alt+P）；\n2. 工作台会在右侧侧边栏或外置浏览器中自动启动本地服务。');
             };
           }
         });
@@ -211,7 +211,7 @@
               tagName: target.tagName.toLowerCase()
             })
           }).then(r => r.json()).then(res => {
-            if (res.ok) console.log('[Lakala-Design-Plugin] Auto saved to local file.');
+            if (res.ok) console.log('[Agy Design Studio] Auto saved to local file.');
           }).catch(() => {});
         }
       }

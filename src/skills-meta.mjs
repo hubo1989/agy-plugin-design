@@ -69,7 +69,7 @@ export function resolveAgyStateFile(options = {}) {
 export function computeGalleryBuildId(pluginRoot = __defaultPluginRoot) {
   const hash = crypto.createHash('sha256');
   hash.update(String(pluginRoot));
-  for (const rel of ['src/gallery-server.mjs', 'src/gallery-ui.mjs', 'src/builtin-library.mjs', 'src/skills-meta.mjs']) {
+  for (const rel of ['src/gallery-server.mjs', 'src/gallery-ui.mjs', 'src/gallery-locales.mjs', 'src/builtin-library.mjs', 'src/skills-meta.mjs']) {
     try {
       hash.update(fs.readFileSync(path.join(pluginRoot, rel)));
     } catch {}
@@ -216,7 +216,6 @@ export const NOT_CONTENT = new Set([
 ]);
 
 export {
-  LAKALA_TOKENS,
   BUILTIN_EXAMPLES,
   BUILTIN_BY_ID,
   BUILTIN_TEMPLATES as EXAMPLE_TEMPLATES,

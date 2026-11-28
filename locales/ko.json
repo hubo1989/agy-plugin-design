@@ -1,0 +1,23 @@
+{
+  "unit.label": "Design",
+  "unit.title": "Agy Design Studio 열기",
+  "unit.opening": "여는 중…",
+  "unit.openingTitle": "Agy Design Studio 여는 중…",
+  "workbench.title": "Agy Design Studio",
+  "workbench.wsDefault": "로컬 작업 영역",
+  "workbench.wsEmpty": "로컬 작업 영역 없음",
+  "workbench.loading": "로컬 작업 영역과 디자인 스튜디오를 준비하는 중…",
+  "workbench.openExternal": "브라우저로 열기 ↗",
+  "workbench.close": "닫기",
+  "workbench.retry": "다시 시도",
+  "workbench.openSettings": "포트 설정 변경",
+  "error.titlePort": "로컬 포트가 이미 사용 중입니다",
+  "error.titleWorkspace": "작업 영역 경로가 제한되었습니다",
+  "error.titleGeneric": "Agy Design Studio를 시작할 수 없습니다",
+  "error.fallbackMsg": "디자인 스튜디오 로컬 서버가 응답하지 않습니다. 다시 시도하거나 포트 설정을 확인하세요.",
+  "error.noWorkspace": "열린 로컬 작업 영역이 감지되지 않았습니다. Antigravity에서 로컬 폴더를 연 뒤 다시 시도하세요.",
+  "error.remoteWorkspace": "작업 영역 경로에 로컬로 접근할 수 없습니다(원격 또는 미마운트). 디자인 스튜디오는 로컬 작업 영역만 지원합니다.",
+  "error.forbiddenPath": "현재 경로는 플러그인 설치 디렉터리 또는 보호된 시스템 경로입니다. 프로젝트 작업 영역으로 전환한 뒤 다시 시도하세요.",
+  "error.portInUse": "디자인 스튜디오 포트를 다른 프로세스가 사용 중입니다. 플러그인 설정에서 포트를 변경한 뒤 다시 시도하세요.",
+  "error.startTimeout": "디자인 스튜디오 로컬 서버 응답 시간이 초과되었습니다. 다시 시도하거나 로그를 확인하세요."
+}

@@ -10,6 +10,12 @@ const {
   getAgyStateDir,
   isTestMode
 } = require('./workspace-resolver');
+const {
+  DEFAULT_LOCALE,
+  extractLocaleFromPayload,
+  normalizeLocale,
+  t: tr
+} = require('./i18n');
 
 const PLUGIN_ID = 'hubo1989.design';
 const APP_MARKER = 'agy-plugin-design';
@@ -19,7 +25,7 @@ const HEALTH_POLL_INTERVAL_MS = 200;
 
 const DEFAULT_SETTINGS = Object.freeze({
   showTopbarButton: true,
-  openMode: 'embedded',
+  openMode: 'sidebar',
   shortcut: 'Mod+Alt+P',
   port: DEFAULT_PORT,
   prewarmOnStartup: true
@@ -28,9 +34,7 @@ const DEFAULT_SETTINGS = Object.freeze({
 let activeRuntime = null;
 
 function normalizeSettings(raw = {}) {
-  const openMode = ['embedded', 'browser', 'popover'].includes(raw.openMode)
-    ? raw.openMode
-    : DEFAULT_SETTINGS.openMode;
+  const openMode = raw.openMode === 'browser' ? 'browser' : DEFAULT_SETTINGS.openMode;
   const rawPort = Number(raw.port);
   const port = Number.isInteger(rawPort) && rawPort >= 1024 && rawPort <= 65535
     ? rawPort
@@ -47,7 +51,13 @@ function normalizeSettings(raw = {}) {
 function computeGalleryBuildId(pluginRoot) {
   const hash = crypto.createHash('sha256');
   hash.update(String(pluginRoot));
-  for (const rel of ['src/gallery-server.mjs', 'src/gallery-ui.mjs', 'src/builtin-library.mjs', 'src/skills-meta.mjs']) {
+  for (const rel of [
+    'src/gallery-server.mjs',
+    'src/gallery-ui.mjs',
+    'src/gallery-locales.mjs',
+    'src/builtin-library.mjs',
+    'src/skills-meta.mjs'
+  ]) {
     try {
       hash.update(fs.readFileSync(path.join(pluginRoot, rel)));
     } catch {}
@@ -158,6 +168,21 @@ function defaultOpenExternalUrl(targetUrl) {
   }
 }
 
+function appendGalleryParams(targetUrl, scheme, locale) {
+  try {
+    const parsed = new URL(String(targetUrl || ''));
+    if (scheme === 'dark' || scheme === 'light') {
+      parsed.searchParams.set('scheme', scheme);
+    }
+    if (locale) {
+      parsed.searchParams.set('lang', normalizeLocale(locale, DEFAULT_LOCALE));
+    }
+    return parsed.href;
+  } catch {
+    return String(targetUrl || '');
+  }
+}
+
 function isPidAlive(pid) {
   if (!Number.isInteger(pid) || pid <= 0) return false;
   try {
@@ -196,6 +221,8 @@ async function activate(host, options = {}) {
 
   let settings = normalizeSettings(host?.settings?.get?.() || {});
   let currentHostScheme = '';
+  let currentHostLocale = DEFAULT_LOCALE;
+  let hasExplicitLocale = false;
   let lastWorkspace = { workspaceRoot: '', workspaceName: '' };
   let galleryChild = null;
   let galleryChildPort = null;
@@ -216,7 +243,20 @@ async function activate(host, options = {}) {
     return next;
   }
 
-  // Subscribe to host theme state for Zero-FOUC first-paint scheme sync
+  function applyLocaleCandidate(payload, persist = true) {
+    const next = extractLocaleFromPayload(payload);
+    if (!next) return false;
+    hasExplicitLocale = true;
+    if (next !== currentHostLocale) {
+      currentHostLocale = next;
+      if (persist) {
+        try { syncRuntimeStateFile({ hostLocale: next }); } catch {}
+      }
+    }
+    return true;
+  }
+
+  // Subscribe to host theme + host locale + zh-cn plugin locale
   if (host?.state && typeof host.state.subscribe === 'function') {
     try {
       const stopThemeSub = await host.state.subscribe('state:host.theme@1', (val) => {
@@ -230,7 +270,47 @@ async function activate(host, options = {}) {
       });
       if (typeof stopThemeSub === 'function') disposers.push(stopThemeSub);
     } catch {}
+
+    try {
+      const stopLocaleSub = await host.state.subscribe('state:host.locale@1', (val) => {
+        applyLocaleCandidate(val, true);
+      });
+      if (typeof stopLocaleSub === 'function') disposers.push(stopLocaleSub);
+    } catch {}
+
+    try {
+      const stopZhLangSub = await host.state.subscribe('state:zh-cn.lang@1', (val) => {
+        applyLocaleCandidate(val, true);
+      });
+      if (typeof stopZhLangSub === 'function') disposers.push(stopZhLangSub);
+    } catch {}
   }
+
+  if (typeof host?.state?.get === 'function') {
+    try {
+      const hostLoc = host.state.get('state:host.locale@1');
+      if (hostLoc) applyLocaleCandidate(hostLoc?.value ?? hostLoc, true);
+      if (!hasExplicitLocale) {
+        const zhLoc = host.state.get('state:zh-cn.lang@1');
+        if (zhLoc) applyLocaleCandidate(zhLoc?.value ?? zhLoc, true);
+      }
+    } catch {}
+  }
+
+  if (!hasExplicitLocale && host?.services && typeof host.services.call === 'function') {
+    try {
+      const res = await host.services.call('zh-cn', 'getConfig', [], { optional: true });
+      const cfg = res && res.ok === true && res.value && typeof res.value === 'object'
+        ? res.value
+        : (res && typeof res === 'object' && !('ok' in res) && res.unavailable !== true ? res : null);
+      if (cfg) applyLocaleCandidate(cfg, true);
+    } catch {}
+  }
+
+  // Ensure runtime-state.json always has initial hostLocale
+  try {
+    syncRuntimeStateFile({ hostLocale: currentHostLocale });
+  } catch {}
 
   function killManagedChild() {
     const child = galleryChild;
@@ -267,7 +347,7 @@ async function activate(host, options = {}) {
 
   async function ensureGalleryRunning(opts = {}) {
     if (disposed) {
-      return { ok: false, code: 'PLUGIN_DISPOSED', error: '插件已停用' };
+      return { ok: false, code: 'PLUGIN_DISPOSED', error: 'Plugin disposed' };
     }
     if (ensurePromise) return ensurePromise;
 
@@ -298,7 +378,7 @@ async function activate(host, options = {}) {
             ok: false,
             code: 'PORT_OCCUPIED_BY_OTHER',
             port: targetPort,
-            error: `设计工作台端口 ${targetPort} 已被其他程序占用，请在插件设置中修改端口后重试。`
+            error: tr(currentHostLocale, 'error.portInUse')
           };
         }
       }
@@ -310,6 +390,7 @@ async function activate(host, options = {}) {
         AGY_DESIGN_PORT: String(targetPort),
         AGY_DESIGN_HOME: resolveDesignHome(),
         AGY_DESIGN_STATE_FILE: resolveStateFile(),
+        AGY_HOST_LOCALE: currentHostLocale,
         ...(currentHostScheme ? { AGY_HOST_SCHEME: currentHostScheme } : {})
       };
 
@@ -358,7 +439,7 @@ async function activate(host, options = {}) {
               reqId: msg.reqId,
               ok: false,
               fallback: 'clipboard',
-              error: '提示词草稿已复制，请直接粘贴发送给 Antigravity 对话框'
+              error: 'Prompt copied to clipboard'
             });
           } catch {}
         }
@@ -368,7 +449,7 @@ async function activate(host, options = {}) {
       while (Date.now() - startAt < timeoutMs) {
         if (disposed) {
           killManagedChild();
-          return { ok: false, code: 'PLUGIN_DISPOSED', error: '插件已停用' };
+          return { ok: false, code: 'PLUGIN_DISPOSED', error: 'Plugin disposed' };
         }
         if (spawnErr) {
           killManagedChild();
@@ -376,7 +457,7 @@ async function activate(host, options = {}) {
             ok: false,
             code: 'SPAWN_FAILED',
             port: targetPort,
-            error: `设计工作台本地服务启动失败：${spawnErr.message}`
+            error: `Spawn failed: ${spawnErr.message}`
           };
         }
         if (exitedEarly) {
@@ -385,14 +466,14 @@ async function activate(host, options = {}) {
               ok: false,
               code: 'PORT_OCCUPIED_BY_OTHER',
               port: targetPort,
-              error: `设计工作台端口 ${targetPort} 已被其他程序占用，请在插件设置中修改端口后重试。`
+              error: tr(currentHostLocale, 'error.portInUse')
             };
           }
           return {
             ok: false,
             code: 'SERVER_EXITED',
             port: targetPort,
-            error: `设计工作台本地服务异常退出 (${exitInfo})：${stderrBuf.trim() || '未知错误'}`
+            error: `Gallery server exited (${exitInfo}): ${stderrBuf.trim() || 'unknown'}`
           };
         }
 
@@ -412,7 +493,7 @@ async function activate(host, options = {}) {
             ok: false,
             code: 'PORT_OCCUPIED_BY_OTHER',
             port: targetPort,
-            error: `设计工作台端口 ${targetPort} 已被其他程序占用，请在插件设置中修改端口后重试。`
+            error: tr(currentHostLocale, 'error.portInUse')
           };
         }
 
@@ -425,7 +506,7 @@ async function activate(host, options = {}) {
         ok: false,
         code: 'START_TIMEOUT',
         port: targetPort,
-        error: `设计工作台本地服务启动超时或未响应（端口 ${targetPort}），请点击重试或检查插件日志。`
+        error: tr(currentHostLocale, 'error.startTimeout')
       };
     })();
 
@@ -452,6 +533,7 @@ async function activate(host, options = {}) {
       syncRuntimeStateFile({
         workspaceRoot: resolved.workspaceRoot,
         workspaceName: resolved.workspaceName,
+        hostLocale: currentHostLocale,
         ...(currentHostScheme ? { hostScheme: currentHostScheme } : {})
       });
       try {
@@ -474,6 +556,7 @@ async function activate(host, options = {}) {
       syncRuntimeStateFile({
         workspaceRoot: '',
         workspaceName: '',
+        hostLocale: currentHostLocale,
         ...(currentHostScheme ? { hostScheme: currentHostScheme } : {})
       });
       try {
@@ -503,7 +586,10 @@ async function activate(host, options = {}) {
           code: ws.reason,
           reason: ws.reason,
           path: ws.path || '',
-          error: ws.message,
+          error: ws.reason === 'REMOTE_OR_UNMOUNTED'
+            ? tr(currentHostLocale, 'error.remoteWorkspace')
+            : tr(currentHostLocale, 'error.forbiddenPath'),
+          hostLocale: currentHostLocale,
           workspaceRoot: '',
           workspaceName: ''
         };
@@ -524,6 +610,7 @@ async function activate(host, options = {}) {
           code: srv.code,
           port: settings.port,
           error: srv.error,
+          hostLocale: currentHostLocale,
           workspaceRoot: ws.workspaceRoot || '',
           workspaceName: ws.workspaceName || ''
         };
@@ -543,6 +630,7 @@ async function activate(host, options = {}) {
         url: srv.url,
         port: srv.port,
         warm: srv.warm,
+        hostLocale: currentHostLocale,
         workspaceRoot: ws.workspaceRoot || '',
         workspaceName: ws.workspaceName || '',
         ...(ws.ok ? {} : { warning: { code: ws.reason, message: ws.message } })
@@ -556,6 +644,7 @@ async function activate(host, options = {}) {
         port: settings.port,
         running: health.alive && health.mine,
         occupiedByOther: health.alive && !health.mine,
+        hostLocale: currentHostLocale,
         workspaceRoot: lastWorkspace.workspaceRoot,
         workspaceName: lastWorkspace.workspaceName,
         settings: { ...settings }
@@ -569,7 +658,7 @@ async function activate(host, options = {}) {
     },
 
     async openExternal(targetUrl) {
-      const urlToOpen = targetUrl || `http://127.0.0.1:${settings.port}`;
+      const urlToOpen = targetUrl || appendGalleryParams(`http://127.0.0.1:${settings.port}`, currentHostScheme, currentHostLocale);
       if (typeof options.openExternalFn === 'function') {
         return await options.openExternalFn(urlToOpen);
       }
@@ -577,6 +666,14 @@ async function activate(host, options = {}) {
         return { ok: true, url: urlToOpen, mocked: true };
       }
       return defaultOpenExternalUrl(urlToOpen);
+    },
+
+    async openExternalBrowser(opts = {}) {
+      const srv = await ensureGalleryRunning({ port: settings.port });
+      if (!srv.ok) return srv;
+      const scheme = opts?.scheme || currentHostScheme;
+      const locale = opts?.locale || currentHostLocale;
+      return await serviceMethods.openExternal(appendGalleryParams(srv.url, scheme, locale));
     },
 
     async dispatchPrompt(payload = {}) {
@@ -603,6 +700,7 @@ async function activate(host, options = {}) {
       return {
         ok: true,
         url: srv.url,
+        hostLocale: currentHostLocale,
         workspaceRoot: ws.workspaceRoot || '',
         workspaceName: ws.workspaceName || '',
         items
@@ -624,16 +722,23 @@ async function activate(host, options = {}) {
     'design.getStatus': () => serviceMethods.getStatus(),
     'design.resolveWorkspace': (clickCtx) => serviceMethods.resolveWorkspace(clickCtx),
     'design.openExternal': (targetUrl) => serviceMethods.openExternal(targetUrl),
+    'design.openExternalBrowser': (opts) => serviceMethods.openExternalBrowser(opts),
     'design.dispatchPrompt': (payload) => serviceMethods.dispatchPrompt(payload),
     'design.listRecentProjects': (clickCtx) => serviceMethods.listRecentProjects(clickCtx),
     'design.open': async (clickCtx = {}) => {
       const res = await serviceMethods.prepareWorkbench(clickCtx);
       if (res.ok) {
+        const extUrl = appendGalleryParams(res.url, currentHostScheme, currentHostLocale);
         try {
-          host?.events?.emit?.('design:open-workbench@1', { url: res.url, workspaceRoot: res.workspaceRoot });
+          host?.events?.emit?.('design:open-workbench@1', {
+            url: res.url,
+            workspaceRoot: res.workspaceRoot,
+            workspaceName: res.workspaceName,
+            hostLocale: currentHostLocale
+          });
         } catch {}
         if (settings.openMode === 'browser') {
-          await serviceMethods.openExternal(res.url);
+          await serviceMethods.openExternal(extUrl);
         }
       }
       return res;
@@ -641,7 +746,7 @@ async function activate(host, options = {}) {
     'design.openBrowser': async (clickCtx = {}) => {
       const res = await serviceMethods.prepareWorkbench(clickCtx);
       if (res.ok) {
-        await serviceMethods.openExternal(res.url);
+        await serviceMethods.openExternal(appendGalleryParams(res.url, currentHostScheme, currentHostLocale));
       }
       return res;
     },
@@ -658,8 +763,9 @@ async function activate(host, options = {}) {
         return { ok: true, url: openRes.json.url, skill: skillId };
       }
       // Fallback: open gallery filtered/focused when no project of this skill exists yet
-      await serviceMethods.openExternal(prep.url);
-      return { ok: true, url: prep.url, skill: skillId, fallback: 'gallery' };
+      const fallbackUrl = appendGalleryParams(prep.url, currentHostScheme, currentHostLocale);
+      await serviceMethods.openExternal(fallbackUrl);
+      return { ok: true, url: fallbackUrl, skill: skillId, fallback: 'gallery' };
     };
   }
 

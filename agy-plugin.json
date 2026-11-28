@@ -2,14 +2,30 @@
   "schemaVersion": 1,
   "id": "hubo1989.design",
   "publisher": "hubo1989",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "MIT",
   "displayName": {
     "zh-CN": "Agy Design Studio",
+    "zh-TW": "Agy Design Studio",
+    "ja": "Agy Design Studio",
+    "ko": "Agy Design Studio",
+    "es": "Agy Design Studio",
+    "pt": "Agy Design Studio",
+    "fr": "Agy Design Studio",
+    "ru": "Agy Design Studio",
+    "it": "Agy Design Studio",
     "en": "Agy Design Studio"
   },
   "description": {
     "zh-CN": "本地优先的 Antigravity 可视化设计工作台：统一管理幻灯片、无限画布、设计系统、数据看板与动效五类作品",
+    "zh-TW": "本地優先的 Antigravity 視覺化設計工作台：統一管理投影片、無限畫布、設計系統、數據儀表板與動效五類作品",
+    "ja": "Antigravity 向けローカルファーストのビジュアルデザインスタジオ：スライド・無限キャンバス・デザインシステム・ダッシュボード・モーションを一元管理",
+    "ko": "Antigravity용 로컬 우선 비주얼 디자인 스튜디오: 슬라이드, 무한 캔버스, 디자인 시스템, 대시보드, 모션 프로젝트를 통합 관리",
+    "es": "Estudio de diseño visual local-first para Antigravity: gestiona diapositivas, lienzo infinito, sistema de diseño, paneles y animaciones en un solo lugar",
+    "pt": "Estúdio de design visual local-first para Antigravity: gerencie slides, tela infinita, design system, dashboards e animações em um único painel",
+    "fr": "Studio de design visuel local-first pour Antigravity : gérez diapositives, canevas infini, design system, tableaux de bord et animations au même endroit",
+    "ru": "Локальная визуальная дизайн-студия для Antigravity: единое управление слайдами, бесконечным холстом, дизайн-системой, дашбордами и анимацией",
+    "it": "Studio di design visivo local-first per Antigravity: gestisci presentazioni, canvas infinito, design system, dashboard e animazioni in un unico spazio",
     "en": "Local-first visual design studio for Antigravity: manage slides, canvas, design system, dashboard, and motion projects in one workspace gallery"
   },
   "category": "design",
@@ -71,6 +87,10 @@
     "context": {
       "version": "^1.0.0",
       "optional": true
+    },
+    "zh-cn": {
+      "version": "^1.0.0",
+      "optional": true
     }
   },
   "permissions": [
@@ -88,31 +108,49 @@
         "order": 48
       }
     ],
-    "topbar.popovers": [
-      {
-        "id": "design-quick",
-        "anchorId": "design"
-      }
-    ],
     "commands": [
       {
         "id": "design.open",
         "title": {
           "zh-CN": "打开 Agy Design Studio 设计工作台",
+          "zh-TW": "開啟 Agy Design Studio 設計工作台",
+          "ja": "Agy Design Studio を開く",
+          "ko": "Agy Design Studio 열기",
+          "es": "Abrir Agy Design Studio",
+          "pt": "Abrir Agy Design Studio",
+          "fr": "Ouvrir Agy Design Studio",
+          "ru": "Открыть Agy Design Studio",
+          "it": "Apri Agy Design Studio",
           "en": "Open Agy Design Studio"
         }
       },
       {
         "id": "design.openBrowser",
         "title": {
-          "zh-CN": "在系统浏览器中打开设计工作台",
-          "en": "Open Design Studio in Browser"
+          "zh-CN": "在外置浏览器中打开设计工作台",
+          "zh-TW": "在外部瀏覽器中開啟設計工作台",
+          "ja": "外部ブラウザでデザインスタジオを開く",
+          "ko": "외부 브라우저에서 디자인 스튜디오 열기",
+          "es": "Abrir estudio de diseño en navegador externo",
+          "pt": "Abrir estúdio de design no navegador externo",
+          "fr": "Ouvrir le studio de design dans le navigateur externe",
+          "ru": "Открыть дизайн-студию во внешнем браузере",
+          "it": "Apri studio di design nel browser esterno",
+          "en": "Open Design Studio in External Browser"
         }
       },
       {
         "id": "design.restartServer",
         "title": {
           "zh-CN": "重启设计工作台本地服务",
+          "zh-TW": "重啟設計工作台本地服務",
+          "ja": "デザインスタジオのローカルサーバーを再起動",
+          "ko": "디자인 스튜디오 로컬 서버 재시작",
+          "es": "Reiniciar servidor local del estudio de diseño",
+          "pt": "Reiniciar servidor local do estúdio de design",
+          "fr": "Redémarrer le serveur local du studio de design",
+          "ru": "Перезапустить локальный сервер дизайн-студии",
+          "it": "Riavvia server locale dello studio di design",
           "en": "Restart Design Studio Local Server"
         }
       },
@@ -120,6 +158,14 @@
         "id": "design.skill.claude-slides",
         "title": {
           "zh-CN": "打开幻灯片编辑器 (Slides)",
+          "zh-TW": "開啟投影片編輯器 (Slides)",
+          "ja": "スライドエディターを開く (Slides)",
+          "ko": "슬라이드 편집기 열기 (Slides)",
+          "es": "Abrir editor de diapositivas (Slides)",
+          "pt": "Abrir editor de slides (Slides)",
+          "fr": "Ouvrir l'éditeur de diapositives (Slides)",
+          "ru": "Открыть редактор слайдов (Slides)",
+          "it": "Apri editor presentazioni (Slides)",
           "en": "Open Slides Editor"
         }
       },
@@ -127,6 +173,14 @@
         "id": "design.skill.claude-design",
         "title": {
           "zh-CN": "打开无限画布编辑器 (Canvas)",
+          "zh-TW": "開啟無限畫布編輯器 (Canvas)",
+          "ja": "無限キャンバスエディターを開く (Canvas)",
+          "ko": "무한 캔버스 편집기 열기 (Canvas)",
+          "es": "Abrir editor de lienzo infinito (Canvas)",
+          "pt": "Abrir editor de tela infinita (Canvas)",
+          "fr": "Ouvrir l'éditeur de canevas infini (Canvas)",
+          "ru": "Открыть редактор бесконечного холста (Canvas)",
+          "it": "Apri editor canvas infinito (Canvas)",
           "en": "Open Canvas Design Editor"
         }
       },
@@ -134,6 +188,14 @@
         "id": "design.skill.claude-design-system",
         "title": {
           "zh-CN": "打开设计系统编辑器 (Design System)",
+          "zh-TW": "開啟設計系統編輯器 (Design System)",
+          "ja": "デザインシステムエディターを開く (Design System)",
+          "ko": "디자인 시스템 편집기 열기 (Design System)",
+          "es": "Abrir editor de sistema de diseño (Design System)",
+          "pt": "Abrir editor de design system (Design System)",
+          "fr": "Ouvrir l'éditeur de design system (Design System)",
+          "ru": "Открыть редактор дизайн-системы (Design System)",
+          "it": "Apri editor design system (Design System)",
           "en": "Open Design System Editor"
         }
       },
@@ -141,6 +203,14 @@
         "id": "design.skill.claude-dashboard",
         "title": {
           "zh-CN": "打开数据看板编辑器 (Dashboard)",
+          "zh-TW": "開啟數據儀表板編輯器 (Dashboard)",
+          "ja": "ダッシュボードエディターを開く (Dashboard)",
+          "ko": "대시보드 편집기 열기 (Dashboard)",
+          "es": "Abrir editor de paneles (Dashboard)",
+          "pt": "Abrir editor de dashboard (Dashboard)",
+          "fr": "Ouvrir l'éditeur de tableau de bord (Dashboard)",
+          "ru": "Открыть редактор дашбордов (Dashboard)",
+          "it": "Apri editor dashboard (Dashboard)",
           "en": "Open Dashboard Editor"
         }
       },
@@ -148,6 +218,14 @@
         "id": "design.skill.claude-motion",
         "title": {
           "zh-CN": "打开动效编辑器 (Motion)",
+          "zh-TW": "開啟動效編輯器 (Motion)",
+          "ja": "モーションエディターを開く (Motion)",
+          "ko": "모션 편집기 열기 (Motion)",
+          "es": "Abrir editor de animaciones (Motion)",
+          "pt": "Abrir editor de animações (Motion)",
+          "fr": "Ouvrir l'éditeur d'animations (Motion)",
+          "ru": "Открыть редактор анимации (Motion)",
+          "it": "Apri editor animazioni (Motion)",
           "en": "Open Motion Editor"
         }
       }

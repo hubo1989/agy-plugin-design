@@ -1,429 +1,30 @@
-// Agy Design Studio (agy-plugin-design) · 工作区画廊界面模块（双语目录、工作室布局样式与交互脚本）
+// Agy Design Studio (agy-plugin-design) · 工作区画廊界面模块（跟随底座 10 语种、单栏响应式布局）
+import { createGalleryStrings, normalizeGalleryLocale } from './gallery-locales.mjs';
 
-const SKILL_EN_COPY = {
-  'claude-slides': [
-    'Editable slides for presenting or exporting to PDF, HTML, or PowerPoint.',
-    'Help me create a slide deck about: ',
-  ],
-  'claude-design': [
-    'Explore editable designs side by side on an infinite canvas.',
-    'Help me design: ',
-  ],
-  'claude-design-system': [
-    'Unify brand colors, typography, spacing tokens, live components, and guidelines.',
-    'Help me create a design system for the brand: ',
-  ],
-  'claude-dashboard': [
-    'Build live-updating charts, KPIs, and data tables from your files.',
-    'Help me create a data dashboard from: ',
-  ],
-  'claude-motion': [
-    'Craft expressive short motion pieces and export MP4 or GIF.',
-    'Help me animate: ',
-  ],
-};
-
-const RECIPE_EN_COPY = {
-  'ds-to-all': ['Design system → Unified deck', 'Establish brand tokens first, then build a cohesive slide deck from them.'],
-  'canvas-to-motion': ['Canvas concepts → Motion piece', 'Explore 3 directions on canvas, pick a winner, and animate it.'],
-  'data-to-report': ['Data → Dashboard → Executive deck', 'Turn raw metrics into a dashboard, then summarize into presentation slides.'],
-  'explore-to-ds': ['Canvas exploration → Design system', 'Iterate visual directions freely, then codify the final style into tokens.'],
-};
-
-export function createGalleryStrings(skills, recipes, examples) {
-  const str = {
-    zh: {
-      works: '设计工作台',
-      studioSubtitle: '以统一设计系统驱动画布探索、商业演示与数据视图',
-      navOverview: '工作台总览',
-      navDesignSystem: '设计系统',
-      navWorks: '作品库',
-      navExamples: '精选示例',
-      navWorkflows: '协同工作流',
-      railWorkspaceLabel: '当前焦点工作区',
-      railNoWorkspace: '等待识别工作区',
-      railSkillsLabel: '按工具筛选作品',
-      allTypes: '全部',
-      schemeToggle: '切换明暗外观',
-      searchPlaceholder: '搜索作品名称、类型或目录 (/)',
-      search: '搜索作品',
-      clearSearch: '清除搜索',
-      sortFilter: '排序和筛选',
-      switchView: '切换视图',
-      refresh: '刷新列表',
-      new: '快速新建',
-      newSubtitle: '选择创作工具，从内置规范模板或 Agent 提示词开始',
-      recommendedFoundation: '推荐基石',
-      examples: '预置精选示例',
-      examplesSubtitle: '基于拉卡拉品牌语言打磨的 5 套完整可编辑成品，支持直接写入工作区或交由 Agent 延展',
-      workflows: '跨技能 AI 工作流',
-      workflowsSubtitle: '一键在当前工作区发起多步串联任务，让设计系统与下游产出保持一致',
-      allWorks: '全部作品',
-      scopeWorkspace: '当前工作区 ({count})',
-      scopeAll: '全部历史 ({count})',
-      emptyCompactText: '当前工作区尚无作品，可直接使用上方精选示例或从下方工具快速新建。',
-      emptyShowOtherWs: '查看其他工作区作品 ({count})',
-      currentWsBadge: '当前工作区',
-      otherWsBadge: '历史工作区',
-      back: '← 返回工作台',
-      popOut: '浏览器打开 ↗',
-      language: '切换语言',
-      undo: '撤销',
-      restored: '已恢复作品',
-      restoreFailed: '恢复失败: ',
-      listView: '切换到列表视图',
-      gridView: '切换到网格视图',
-      noMatches: '没有符合筛选条件的作品',
-      noWorks: '当前工作区还没有作品',
-      clearHint: '试试清除搜索关键词或重置筛选条件。',
-      emptyHint: '推荐先从上方「拉卡拉 · 品牌设计系统」一键启用规范，或从下方精选示例直接创建首个可编辑项目。',
-      clearFilters: '重置筛选',
-      projectPreview: '作品预览',
-      missing: '文件已不在',
-      missingReasonDir: '原目录已移走或清理',
-      missingReasonMarker: '缺少项目索引文件',
-      missingBannerTitle: '有 {count} 条历史记录的原项目文件已不在原路径',
-      missingBannerDesc: '这些记录来自已删除或移动的旧目录，已自动从主列表收起，清理记录不会删除任何现有文件。',
-      missingShow: '查看明细',
-      missingHide: '收起明细',
-      missingClearAll: '一键清除全部 ({count})',
-      missingClearedAll: '✓ 已清理 {count} 条失效历史记录',
-      opening: '正在启动编辑器…',
-      creating: '正在创建…',
-      more: '更多操作',
-      unpin: '取消固定',
-      pin: '固定到顶部',
-      cannotOpen: '无法打开：',
-      unknownError: '未知错误',
-      openFailed: '打开失败：',
-      rename: '重命名',
-      recreate: '做同款',
-      useTemplate: '使用模板',
-      copyLink: '复制编辑器链接',
-      forget: '清除记录',
-      delete: '删除',
-      draftCopied: '提示词草稿已复制，请粘贴给 Agent：',
-      remixFailed: '启动同款失败: ',
-      forgotten: '已移除该条失效记录',
-      forgetFailed: '清除失败: ',
-      linkCopied: '编辑器链接已复制到剪贴板',
-      linkFailed: '获取编辑器链接失败',
-      renameTitle: '重命名作品',
-      cancel: '取消',
-      save: '保存',
-      renameFailed: '重命名失败: ',
-      deleteMove: '这会将该作品从列表移除，并把文件夹安全移入应用数据目录下的 baoyu-design/trash（可撤销）。',
-      deleteKeep: '这会将它从作品列表移除。因目录内还包含其他工程文件，原文件夹保留在：',
-      deleteFailed: '删除失败: ',
-      copyPrompt: '复制 Agent 提示词',
-      sendToAgent: '发送给 Antigravity 对话',
-      createBlank: '用内置模板直接创建',
-      promptCopied: '✓ 提示词已复制到剪贴板，发送给 Agent 即可',
-      copyFailed: '复制失败，请手动复制：',
-      createFailed: '创建失败: ',
-      sortOpened: '最近打开',
-      sortUpdated: '最近修改',
-      sortCreated: '创建时间',
-      sortName: '名称排序',
-      any: '不限',
-      today: '今天',
-      yesterday: '昨天',
-      week: '最近 7 天',
-      month: '最近 30 天',
-      shared: '已局域网共享',
-      private: '仅本地',
-      sortBy: '排序方式',
-      type: '技能类型',
-      selectedSuffix: ' 项',
-      openedAt: '打开时间',
-      sharing: '共享状态',
-      pinned: '仅看已固定',
-      preview: '大图预览',
-      exampleSkeleton: '此示例提供项目结构骨架，创建后可由 Agent 继续填充内容。',
-      close: '关闭',
-      exampleStarted: '✓ 已发起新对话并附带示例参考草稿',
-      exampleCreatedToast: '✓ 已在工作区创建「{title}」',
-      startFailed: '启动失败：',
-      draftPrefix: '；草稿：',
-      workflowFailed: '工作流启动失败: ',
-      refreshed: '✓ 作品列表已同步',
-      workspace: '工作区 · ',
-      loadFailed: '列表加载失败：',
-      justOpened: '刚刚打开',
-      openedRelative: '{time}打开',
-      relativeFallback: '{count} {unit}前',
-      minute: '分钟',
-      hour: '小时',
-      day: '天',
-      weekUnit: '周',
-      monthUnit: '个月',
-      year: '年',
-      boards: '{count} 画板',
-      pages: '{count} 页',
-      scenes: '{count} 场景',
-      components: '{count} 组件',
-      sheets: '{count} 报表',
-      dashboard: '看板',
-      samplePresentation: '示例演示',
-      renameDescription: '为「{title}」设置新的作品名称：',
-      renamed: '已重命名为「{title}」',
-      deleteTitle: '删除「{title}」？',
-      deleted: '已移入回收站：「{title}」',
-      removed: '已从列表移除「{title}」，原文件夹保留在原处。',
-      createTitle: '新建{title}',
-      allWorksCount: '作品库 ({count})',
-      remixSent: '✓ 已在新对话发送同款创作草稿（{outcome}）',
-      workflowSent: '✓ 已在新对话启动工作流（{outcome}）',
-      languageButton: 'EN',
-      previewTitle: '{title} · 预览',
-      runWorkflow: '启动工作流 ↗',
-      dsEyebrowDefault: 'DEFAULT DESIGN SYSTEM · 内置默认规范',
-      dsEyebrowActive: 'WORKSPACE DESIGN SYSTEM · 当前工作区已启用',
-      dsHeroTitle: '拉卡拉 · 品牌设计系统',
-      dsHeroDesc: '提炼自 lakala.com 官方网站视觉体系：以明亮的品牌青 #00B9F1 传递连接感，深海蓝 #0B3875 承载商业信任，配合 #007FA8 无障碍交互色，一套语义 Token 贯通网页、移动端与演示提案。',
-      dsActiveDesc: '当前工作区已配置统一设计系统「{title}」。所有新建画布、幻灯片与 Agent 创作均可直接沿用这套品牌 Token 与组件规范。',
-      dsStatColors: '12 色彩语义',
-      dsStatThemes: 'Light / Dark 双主题',
-      dsStatType: '7 级字阶标尺',
-      dsStatComps: '5 套实时组件',
-      dsInitBtn: '启用至当前工作区',
-      dsOpenBtn: '打开设计系统编辑器',
-      dsInspectBtn: '规范与组件全景预览',
-      dsAgentBtn: '让 Agent 按此规范创作',
-      dsTabColors: '色彩语义 Token',
-      dsTabType: '字体与间距尺度',
-      dsTabComps: '核心组件实景',
-      dsCopyHint: '点击任意色卡复制 CSS 变量与色值',
-      dsTokenCopied: '✓ 已复制 {token} ({hex})',
-      dsScaleSpacing: '8pt 间距节奏',
-      dsScaleRadius: '圆角梯度',
-      dsOpenAllComps: '全屏检视全部 5 套组件与品牌手册 ↗',
-      dsModalSubtitle: '切换上方组件标签可实时检视 HTML 交互卡片，点击「启用至当前工作区」即可在编辑器中修改全部 Token 与文档。',
-    },
-    en: {
-      works: 'Design Studio',
-      studioSubtitle: 'One design system driving canvas explorations, decks, and live dashboards',
-      navOverview: 'Overview',
-      navDesignSystem: 'Design System',
-      navWorks: 'Projects',
-      navExamples: 'Curated Examples',
-      navWorkflows: 'AI Workflows',
-      railWorkspaceLabel: 'Focused Workspace',
-      railNoWorkspace: 'Workspace pending',
-      railSkillsLabel: 'Filter by Tool',
-      allTypes: 'All',
-      schemeToggle: 'Toggle appearance',
-      searchPlaceholder: 'Search projects, skills, or folders (/)',
-      search: 'Search projects',
-      clearSearch: 'Clear search',
-      sortFilter: 'Sort & filter',
-      switchView: 'Switch view',
-      refresh: 'Refresh list',
-      new: 'Quick Create',
-      newSubtitle: 'Pick a studio tool to scaffold from built-in templates or copy an agent prompt',
-      recommendedFoundation: 'Foundation',
-      examples: 'Curated Built-in Examples',
-      examplesSubtitle: 'Five complete, editable projects crafted with the Lakala design language—instantiate locally or remix with your agent',
-      workflows: 'Cross-Skill AI Workflows',
-      workflowsSubtitle: 'Launch multi-step agent pipelines in your focused workspace while keeping visual tokens aligned',
-      allWorks: 'Projects',
-      scopeWorkspace: 'Workspace ({count})',
-      scopeAll: 'All History ({count})',
-      emptyCompactText: 'No projects in this workspace yet—instantiate a curated example above or create from a tool below.',
-      emptyShowOtherWs: 'View other workspaces ({count})',
-      currentWsBadge: 'Current workspace',
-      otherWsBadge: 'Other workspace',
-      back: '← Back to Studio',
-      popOut: 'Open in browser ↗',
-      language: 'Switch language',
-      undo: 'Undo',
-      restored: 'Project restored',
-      restoreFailed: 'Restore failed: ',
-      listView: 'Switch to list view',
-      gridView: 'Switch to grid view',
-      noMatches: 'No matching projects',
-      noWorks: 'No projects in this workspace yet',
-      clearHint: 'Try clearing your search query or resetting active filters.',
-      emptyHint: 'Activate the built-in Lakala Design System above or instantiate one of the curated examples below to start editing.',
-      clearFilters: 'Reset filters',
-      projectPreview: 'Project preview',
-      missing: 'Files missing',
-      missingReasonDir: 'Folder moved or deleted',
-      missingReasonMarker: 'Project index missing',
-      missingBannerTitle: '{count} historical record(s) point to folders no longer at their original path',
-      missingBannerDesc: 'Stale records are tucked away from your active grid. Clearing them only removes index entries and never touches existing files.',
-      missingShow: 'Show details',
-      missingHide: 'Hide details',
-      missingClearAll: 'Clear all ({count})',
-      missingClearedAll: '✓ Cleared {count} stale record(s)',
-      opening: 'Launching editor…',
-      creating: 'Creating…',
-      more: 'More actions',
-      unpin: 'Unpin',
-      pin: 'Pin to top',
-      cannotOpen: 'Cannot open: ',
-      unknownError: 'Unknown error',
-      openFailed: 'Open failed: ',
-      rename: 'Rename',
-      recreate: 'Remix',
-      useTemplate: 'Use template',
-      copyLink: 'Copy editor link',
-      forget: 'Remove record',
-      delete: 'Delete',
-      draftCopied: 'Draft copied—paste it to your agent: ',
-      remixFailed: 'Remix failed: ',
-      forgotten: 'Stale record removed',
-      forgetFailed: 'Could not remove record: ',
-      linkCopied: 'Editor link copied to clipboard',
-      linkFailed: 'Could not get editor link',
-      renameTitle: 'Rename project',
-      cancel: 'Cancel',
-      save: 'Save',
-      renameFailed: 'Rename failed: ',
-      deleteMove: 'This removes the project and moves its folder to baoyu-design/trash (undoable).',
-      deleteKeep: 'This removes the project from the list. Its folder contains other files and stays at: ',
-      deleteFailed: 'Delete failed: ',
-      copyPrompt: 'Copy agent prompt',
-      sendToAgent: 'Send to Antigravity Chat',
-      createBlank: 'Create from built-in template',
-      promptCopied: '✓ Prompt copied. Paste it to your agent.',
-      copyFailed: 'Copy failed. Copy manually: ',
-      createFailed: 'Create failed: ',
-      sortOpened: 'Recently opened',
-      sortUpdated: 'Recently modified',
-      sortCreated: 'Creation time',
-      sortName: 'Name',
-      any: 'Any',
-      today: 'Today',
-      yesterday: 'Yesterday',
-      week: 'Last 7 days',
-      month: 'Last 30 days',
-      shared: 'Shared on LAN',
-      private: 'Local only',
-      sortBy: 'Sort by',
-      type: 'Skill type',
-      selectedSuffix: ' selected',
-      openedAt: 'Opened',
-      sharing: 'Sharing',
-      pinned: 'Pinned only',
-      preview: 'Preview',
-      exampleSkeleton: 'This example provides a project scaffold. Remix it to have your agent populate content.',
-      close: 'Close',
-      exampleStarted: '✓ Started a new agent chat with the example brief',
-      exampleCreatedToast: '✓ Created “{title}” in workspace',
-      startFailed: 'Start failed: ',
-      draftPrefix: '; draft: ',
-      workflowFailed: 'Workflow failed: ',
-      refreshed: '✓ Project list synced',
-      workspace: 'Workspace · ',
-      loadFailed: 'Load failed: ',
-      justOpened: 'Opened just now',
-      openedRelative: 'Opened {time}',
-      relativeFallback: '{count} {unit} ago',
-      minute: 'minutes',
-      hour: 'hours',
-      day: 'days',
-      weekUnit: 'weeks',
-      monthUnit: 'months',
-      year: 'years',
-      boards: '{count} artboards',
-      pages: '{count} slides',
-      scenes: '{count} scenes',
-      components: '{count} components',
-      sheets: '{count} sheets',
-      dashboard: 'Dashboard',
-      samplePresentation: 'Sample presentation',
-      renameDescription: 'Set a new title for “{title}”:',
-      renamed: 'Renamed to “{title}”',
-      deleteTitle: 'Delete “{title}”?',
-      deleted: 'Moved “{title}” to trash.',
-      removed: 'Removed “{title}” from list. Folder kept in place.',
-      createTitle: 'New {title}',
-      allWorksCount: 'Projects ({count})',
-      remixSent: '✓ Remix brief sent to new chat ({outcome})',
-      workflowSent: '✓ Workflow started in new chat ({outcome})',
-      languageButton: '中',
-      previewTitle: '{title} · Preview',
-      runWorkflow: 'Start workflow ↗',
-      dsEyebrowDefault: 'DEFAULT DESIGN SYSTEM · BUILT-IN',
-      dsEyebrowActive: 'WORKSPACE DESIGN SYSTEM · ACTIVE',
-      dsHeroTitle: 'Lakala · Brand Design System',
-      dsHeroDesc: 'Distilled from lakala.com: vibrant Brand Cyan #00B9F1 for connectivity, Deep Navy #0B3875 for trust, and accessible #007FA8 actions—one semantic token set powering web, mobile, and slide decks.',
-      dsActiveDesc: 'Unified design system “{title}” is active in this workspace. Open the editor to refine tokens and components, or have your agent build on top of it.',
-      dsStatColors: '12 Color Tokens',
-      dsStatThemes: 'Light & Dark Themes',
-      dsStatType: '7-Step Type Scale',
-      dsStatComps: '5 Live Components',
-      dsInitBtn: 'Initialize in Workspace',
-      dsOpenBtn: 'Open System Editor',
-      dsInspectBtn: 'Inspect Tokens & Components',
-      dsAgentBtn: 'Build with Agent',
-      dsTabColors: 'Color Tokens',
-      dsTabType: 'Typography & Scale',
-      dsTabComps: 'Live Components',
-      dsCopyHint: 'Click any swatch to copy CSS variable & hex',
-      dsTokenCopied: '✓ Copied {token} ({hex})',
-      dsScaleSpacing: '8pt Spacing Rhythm',
-      dsScaleRadius: 'Corner Radii',
-      dsOpenAllComps: 'Inspect all 5 live component cards & brand book ↗',
-      dsModalSubtitle: 'Switch tabs above to inspect live component cards, or initialize in your workspace to customize tokens.',
-    },
-  };
-
-  for (const skill of skills) {
-    for (const field of ['name', 'about', 'prompt']) str.zh[`skill.${skill.id}.${field}`] = skill[field];
-    str.en[`skill.${skill.id}.name`] = skill.nameEn;
-    const [about, prompt] = SKILL_EN_COPY[skill.id] || [skill.about, skill.prompt];
-    str.en[`skill.${skill.id}.about`] = about;
-    str.en[`skill.${skill.id}.prompt`] = prompt;
-  }
-
-  for (const recipe of recipes) {
-    for (const field of ['title', 'desc']) str.zh[`recipe.${recipe.id}.${field}`] = recipe[field];
-    const [title, desc] = RECIPE_EN_COPY[recipe.id] || [recipe.title, recipe.desc];
-    str.en[`recipe.${recipe.id}.title`] = title;
-    str.en[`recipe.${recipe.id}.desc`] = desc;
-  }
-
-  for (const example of examples) {
-    str.zh[`example.${example.id}.title`] = example.title;
-    str.zh[`example.${example.id}.desc`] = example.desc;
-    str.zh[`example.${example.id}.points`] = example.points;
-    str.en[`example.${example.id}.title`] = example.titleEn || example.title;
-    str.en[`example.${example.id}.desc`] = example.descEn || example.desc;
-    str.en[`example.${example.id}.points`] = example.pointsEn || example.points;
-  }
-
-  return str;
-}
+export { createGalleryStrings };
 
 export const GALLERY_CSS = `
 html[data-i18n-pending] body { visibility: hidden; }
 :root {
   color-scheme: light dark;
-  --lk-cyan: #00b9f1;
-  --lk-deep: #0b3875;
-  --lk-ink: #102b46;
-  --lk-action: light-dark(#007fa8, #4fd1f5);
-  --lk-pale: light-dark(#e6f7fd, rgba(0, 185, 241, 0.14));
-  --dsw-alias-bg-base: light-dark(#f4f8fa, #0b131b);
-  --studio-surface: light-dark(#ffffff, #121f2b);
-  --studio-surface-2: light-dark(#eef4f8, #172836);
-  --studio-rail: light-dark(#ebf2f6, #0e1822);
-  --dsw-alias-bg-skeleton: light-dark(#e9f0f5, #192a38);
-  --dsw-alias-border-l1: light-dark(#cfdde6, #284052);
-  --dsw-alias-border-l2: light-dark(rgba(16, 43, 70, 0.09), rgba(224, 242, 254, 0.11));
-  --dsw-alias-interactive-bg-hover: light-dark(rgba(16, 43, 70, 0.055), rgba(224, 242, 254, 0.07));
-  --dsw-alias-label-primary: light-dark(#102b46, #eff6fa);
-  --dsw-alias-label-secondary: light-dark(#486173, #a8c0cf);
-  --dsw-alias-label-tertiary: light-dark(#647d8e, #7d98a9);
-  --dsw-alias-label-caption: light-dark(#8ba0ae, #577182);
-  --dsw-alias-state-business-primary: light-dark(#007fa8, #38c8f2);
-  --dsw-alias-state-error-primary: light-dark(#c53042, #f87185);
-  --dsw-focus-ring-color: light-dark(#007fa8, #38c8f2);
+  --dsw-alias-bg-base: light-dark(#ffffff, #18181b);
+  --studio-surface: light-dark(#ffffff, #1f1f23);
+  --studio-surface-2: light-dark(#f4f4f5, #27272a);
+  --dsw-alias-bg-skeleton: light-dark(#f4f4f5, #27272a);
+  --dsw-alias-border-l1: light-dark(#d4d4d8, #3f3f46);
+  --dsw-alias-border-l2: light-dark(rgba(24, 24, 27, 0.09), rgba(244, 244, 245, 0.11));
+  --dsw-alias-interactive-bg-hover: light-dark(rgba(24, 24, 27, 0.05), rgba(244, 244, 245, 0.07));
+  --dsw-alias-label-primary: light-dark(#18181b, #f4f4f5);
+  --dsw-alias-label-secondary: light-dark(#52525b, #a1a1aa);
+  --dsw-alias-label-tertiary: light-dark(#71717a, #71717a);
+  --dsw-alias-label-caption: light-dark(#a1a1aa, #52525b);
+  --dsw-alias-state-business-primary: light-dark(#2563eb, #3b82f6);
+  --dsw-alias-state-business-soft: light-dark(rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.16));
+  --dsw-alias-state-error-primary: light-dark(#dc2626, #f87171);
+  --dsw-focus-ring-color: light-dark(#2563eb, #3b82f6);
   --dsw-focus-ring-width: 2px;
-  --studio-shadow-sm: light-dark(0 2px 8px rgba(16, 43, 70, 0.04), 0 2px 10px rgba(0, 0, 0, 0.28));
-  --studio-shadow-md: light-dark(0 14px 36px -10px rgba(16, 43, 70, 0.12), 0 18px 42px -12px rgba(0, 0, 0, 0.5));
+  --studio-shadow-sm: light-dark(0 1px 4px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.28));
+  --studio-shadow-md: light-dark(0 12px 28px -8px rgba(0, 0, 0, 0.12), 0 16px 36px -10px rgba(0, 0, 0, 0.48));
 }
 html[data-scheme=dark] { color-scheme: dark; }
 html[data-scheme=light] { color-scheme: light; }
@@ -441,8 +42,8 @@ button, input { font: inherit; }
   position: relative;
   width: 100%;
   height: 100%;
-  display: grid;
-  grid-template-columns: 236px minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   background: var(--dsw-alias-bg-base);
   color: var(--dsw-alias-label-primary);
   font-size: 14px;
@@ -450,200 +51,74 @@ button, input { font: inherit; }
   overflow: hidden;
 }
 
-/* 左侧工作室导览栏 */
-.bda-rail {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  padding: 20px 14px 16px;
-  background: var(--studio-rail);
-  border-right: 1px solid var(--dsw-alias-border-l2);
-  overflow-y: auto;
-  min-height: 0;
-}
-.rail-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 2px 8px;
-}
-.rail-mark {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  background: linear-gradient(140deg, #0b3875, #009fd4);
-  display: grid;
-  place-items: center;
-  color: #fff;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.28);
-  flex: none;
-}
-.rail-brand-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.rail-brand-name {
-  font-size: 13.5px;
-  font-weight: 700;
-  letter-spacing: -0.25px;
-  line-height: 1.25;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.rail-brand-tag {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 1.6px;
-  color: var(--lk-action);
-  text-transform: uppercase;
-}
-.rail-ws-card {
-  padding: 11px 12px;
-  border-radius: 12px;
-  background: var(--studio-surface);
-  border: 1px solid var(--dsw-alias-border-l2);
-  box-shadow: var(--studio-shadow-sm);
-}
-.rail-ws-eyebrow {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  color: var(--dsw-alias-label-tertiary);
-}
-.rail-ws-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  margin-top: 4px;
-}
-.rail-ws-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #00b9f1;
-  box-shadow: 0 0 0 3px rgba(0, 185, 241, 0.18);
-  flex: none;
-}
-.bda-ws {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--dsw-alias-label-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.rail-group {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.rail-group-label {
-  padding: 0 10px 4px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--dsw-alias-label-tertiary);
-}
-.rail-link {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  width: 100%;
-  padding: 8px 10px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  text-align: left;
-  cursor: pointer;
-  transition: background-color .14s, color .14s;
-}
-.rail-link:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-primary);
-}
-.rail-link[data-active="true"] {
-  background: var(--studio-surface);
-  color: var(--dsw-alias-label-primary);
-  box-shadow: var(--studio-shadow-sm);
-  font-weight: 600;
-}
-.rail-badge {
-  margin-left: auto;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 999px;
-  background: var(--lk-pale);
-  color: var(--lk-action);
-  font-variant-numeric: tabular-nums;
-}
-.rail-count {
-  margin-left: auto;
-  font-size: 11px;
-  color: var(--dsw-alias-label-tertiary);
-  font-variant-numeric: tabular-nums;
-}
-.rail-footer {
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px solid var(--dsw-alias-border-l2);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.rail-footer .bda-btn {
-  flex: 1;
-  justify-content: center;
-}
-
-/* 主滚动舞台 */
 .bda-scroll {
+  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   scrollbar-gutter: stable;
   scroll-behavior: smooth;
 }
 .bda-content {
-  max-width: 1240px;
+  max-width: 1180px;
   margin: 0 auto;
-  padding: 18px clamp(18px, 3vw, 38px) 64px;
+  padding: 16px clamp(14px, 2.8vw, 32px) 56px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-/* 顶栏 */
 .bda-heading {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 14px 20px;
+  gap: 12px 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--dsw-alias-border-l2);
 }
 .bda-heading-title {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
+}
+.bda-heading-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .bda-heading h1 {
-  font-size: 23px;
+  font-size: 19px;
   font-weight: 700;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.4px;
   line-height: 1.25;
 }
+.bda-ws {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: var(--studio-surface-2);
+  border: 1px solid var(--dsw-alias-border-l2);
+  color: var(--dsw-alias-label-secondary);
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .bda-subtitle {
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--dsw-alias-label-secondary);
 }
 .bda-tools {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 7px;
   margin-left: auto;
 }
 .bda-tool {
@@ -651,8 +126,8 @@ button, input { font: inherit; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 9px;
   background: var(--studio-surface);
@@ -668,20 +143,20 @@ button, input { font: inherit; }
 .bda-tool[data-active=true]::after {
   content: "";
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 5px;
+  right: 5px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--lk-cyan);
+  background: var(--dsw-alias-state-business-primary);
 }
 .bda-search {
   display: flex;
   align-items: center;
   gap: 7px;
-  width: min(270px, 46vw);
-  height: 34px;
-  padding: 0 9px 0 11px;
+  width: min(240px, 52vw);
+  height: 32px;
+  padding: 0 8px 0 10px;
   border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 9px;
   background: var(--studio-surface);
@@ -690,7 +165,7 @@ button, input { font: inherit; }
 }
 .bda-search:focus-within {
   border-color: var(--dsw-alias-state-business-primary);
-  box-shadow: 0 0 0 3px rgba(0, 185, 241, 0.14);
+  box-shadow: 0 0 0 3px var(--dsw-alias-state-business-soft);
 }
 .bda-search input {
   flex: 1;
@@ -719,482 +194,46 @@ button, input { font: inherit; }
 }
 .bda-search button:hover { background: var(--dsw-alias-interactive-bg-hover); }
 
-/* 第一视觉核心：设计系统旗舰舞台 */
-.ds-stage {
-  display: grid;
-  grid-template-columns: minmax(320px, 1.02fr) minmax(380px, 1.28fr);
-  border-radius: 20px;
-  overflow: hidden;
-  border: 1px solid var(--dsw-alias-border-l1);
-  background: var(--studio-surface);
-  box-shadow: var(--studio-shadow-md);
-}
-.ds-hero {
-  position: relative;
-  padding: 20px 24px 18px;
-  background: linear-gradient(150deg, #0b3875 0%, #0e2c54 58%, #10243d 100%);
-  color: #f4f9fc;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 14px;
-  overflow: hidden;
-}
-.ds-hero-orbit {
-  position: absolute;
-  right: -76px;
-  top: -68px;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  border: 1px solid rgba(108, 224, 255, 0.22);
-  pointer-events: none;
-}
-.ds-hero-orbit::before {
-  content: "";
-  position: absolute;
-  inset: 34px;
-  border-radius: 50%;
-  border: 1px dashed rgba(255, 255, 255, 0.18);
-}
-.ds-hero-orbit::after {
-  content: "";
-  position: absolute;
-  top: 42px;
-  left: 34px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #00b9f1;
-  box-shadow: 0 0 24px 4px rgba(0, 185, 241, 0.65);
-}
-.ds-eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  align-self: flex-start;
-  padding: 5px 11px;
-  border-radius: 999px;
-  background: rgba(0, 185, 241, 0.16);
-  border: 1px solid rgba(108, 224, 255, 0.34);
-  color: #8be4ff;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.8px;
-}
-.ds-eyebrow[data-ready="true"] {
-  background: rgba(34, 197, 139, 0.18);
-  border-color: rgba(110, 231, 183, 0.4);
-  color: #8ef5cb;
-}
-.ds-brand-lockup {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin-top: 8px;
-}
-.ds-lakala-mark {
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  color: #fff;
-}
-.ds-lakala-mark i {
-  font-style: normal;
-  color: #00b9f1;
-}
-.ds-hero h2 {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  line-height: 1.24;
-  margin-top: 4px;
-  color: #ffffff;
-}
-.ds-hero-desc {
-  margin-top: 6px;
-  font-size: 12.5px;
-  line-height: 1.58;
-  color: rgba(230, 243, 250, 0.84);
-}
-.ds-stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
-}
-.ds-stat {
-  padding: 7px 10px;
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.065);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 12px;
-  font-weight: 500;
-  color: #e4f3fa;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.ds-stat-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #00b9f1;
-  flex: none;
-}
-.ds-cta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.ds-btn-cyan {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 16px;
-  border: 0;
-  border-radius: 10px;
-  background: #00b9f1;
-  color: #072038;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: filter .14s, transform .14s;
-}
-.ds-btn-cyan:hover { filter: brightness(1.06); transform: translateY(-1px); }
-.ds-btn-cyan:disabled { opacity: 0.6; cursor: progress; transform: none; }
-.ds-btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 13px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.07);
-  color: #f0f8fc;
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color .14s, border-color .14s;
-}
-.ds-btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.36);
-}
-
-/* 设计系统右侧交互式规范实验室 */
-.ds-lab {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  background: var(--studio-surface);
-}
-.ds-lab-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--dsw-alias-border-l2);
-  background: var(--studio-surface-2);
-  flex-wrap: wrap;
-}
-.ds-tabs {
-  display: inline-flex;
-  gap: 4px;
-  padding: 3px;
-  border-radius: 10px;
-  background: var(--dsw-alias-bg-base);
-  border: 1px solid var(--dsw-alias-border-l2);
-}
-.ds-tab {
-  height: 28px;
-  padding: 0 11px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--dsw-alias-label-secondary);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color .14s, color .14s;
-}
-.ds-tab[aria-selected="true"] {
-  background: var(--studio-surface);
-  color: var(--dsw-alias-label-primary);
-  box-shadow: var(--studio-shadow-sm);
-}
-.ds-theme-switch {
-  display: inline-flex;
-  gap: 3px;
-  padding: 2px;
-  border-radius: 8px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  background: var(--studio-surface);
-}
-.ds-theme-btn {
-  height: 24px;
-  padding: 0 8px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary);
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.ds-theme-btn[data-on="true"] {
-  background: var(--lk-pale);
-  color: var(--lk-action);
-}
-.ds-lab-body {
-  flex: 1;
-  padding: 12px 16px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.ds-lab-body[data-token-theme="dark"] {
-  background: #0f1d2a;
-  color: #edf5f9;
-}
-.ds-hint-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 11.5px;
-  color: var(--dsw-alias-label-tertiary);
-}
-.ds-lab-body[data-token-theme="dark"] .ds-hint-row { color: #8da6b8; }
-.ds-swatches-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 7px;
-}
-.ds-swatch-card {
-  display: flex;
-  flex-direction: column;
-  padding: 6px;
-  border-radius: 10px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  background: rgba(128, 155, 175, 0.05);
-  text-align: left;
-  cursor: pointer;
-  color: inherit;
-  transition: transform .13s, border-color .13s;
-}
-.ds-swatch-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--lk-cyan);
-}
-.ds-swatch-chip {
-  width: 100%;
-  height: 24px;
-  border-radius: 6px;
-  border: 1px solid rgba(16, 43, 70, 0.12);
-  margin-bottom: 4px;
-}
-.ds-swatch-name {
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.25;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.ds-swatch-hex {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 10.5px;
-  opacity: 0.72;
-  margin-top: 1px;
-}
-.ds-type-list {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.ds-type-row {
-  display: grid;
-  grid-template-columns: 96px 76px minmax(0, 1fr);
-  align-items: baseline;
-  gap: 10px;
-  padding: 6px 10px;
-  border-radius: 9px;
-  background: rgba(128, 155, 175, 0.06);
-}
-.ds-type-token {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--lk-action);
-}
-.ds-type-spec {
-  font-size: 11px;
-  opacity: 0.72;
-  font-variant-numeric: tabular-nums;
-}
-.ds-type-sample {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.ds-scales-row {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 12px;
-  margin-top: 4px;
-}
-.ds-scale-box {
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--dsw-alias-border-l2);
-}
-.ds-scale-title {
-  font-size: 11px;
-  font-weight: 600;
-  opacity: 0.78;
-  margin-bottom: 8px;
-}
-.ds-space-bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 44px;
-}
-.ds-space-bar {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  font-size: 9.5px;
-  font-variant-numeric: tabular-nums;
-}
-.ds-space-bar i {
-  display: block;
-  width: 100%;
-  background: linear-gradient(180deg, #00b9f1, #007fa8);
-  border-radius: 3px 3px 1px 1px;
-}
-.ds-radii-row {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-.ds-radius-chip {
-  width: 36px;
-  height: 36px;
-  border: 1.5px solid #00b9f1;
-  background: rgba(0, 185, 241, 0.1);
-  display: grid;
-  place-items: center;
-  font-size: 9.5px;
-  font-weight: 600;
-}
-.ds-comp-stage {
-  display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  gap: 12px;
-}
-.ds-comp-box {
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid var(--dsw-alias-border-l2);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.ds-comp-label {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  opacity: 0.65;
-}
-.ds-demo-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 36px;
-  padding: 0 15px;
-  border-radius: 8px;
-  border: 0;
-  background: #007fa8;
-  color: #fff;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.ds-demo-btn.sec {
-  background: rgba(0, 185, 241, 0.14);
-  color: inherit;
-}
-.ds-demo-input {
-  width: 100%;
-  height: 36px;
-  padding: 0 11px;
-  border-radius: 8px;
-  border: 1px solid #9ab5c4;
-  background: rgba(255, 255, 255, 0.92);
-  color: #102b46;
-  font-size: 12.5px;
-}
-.ds-link-more {
-  align-self: flex-end;
-  border: 0;
-  background: none;
-  color: var(--lk-action);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 2px 0;
-}
-.ds-link-more:hover { text-decoration: underline; }
-
-/* 板块标题行 */
 .studio-section {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  scroll-margin-top: 20px;
+  gap: 12px;
+  scroll-margin-top: 16px;
 }
 .section-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px 16px;
+  gap: 8px 14px;
 }
 .bda-section-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 700;
-  letter-spacing: -0.25px;
+  letter-spacing: -0.2px;
   color: var(--dsw-alias-label-primary);
 }
 .section-sub {
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--dsw-alias-label-tertiary);
 }
 
-/* 快速新建磁贴 */
 .bda-tiles {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 11px;
   list-style: none;
 }
 .bda-tile {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   height: 100%;
-  padding: 14px;
-  border-radius: 15px;
+  padding: 13px;
+  border-radius: 14px;
   border: 1px solid var(--dsw-alias-border-l2);
   background: var(--studio-surface);
   color: inherit;
@@ -1208,10 +247,6 @@ button, input { font: inherit; }
   border-color: color-mix(in srgb, var(--bda-tint) 55%, var(--dsw-alias-border-l1));
   box-shadow: var(--studio-shadow-md);
 }
-.bda-tile[data-featured="true"] {
-  border-color: rgba(0, 185, 241, 0.45);
-  background: linear-gradient(180deg, color-mix(in srgb, #00b9f1 8%, var(--studio-surface)), var(--studio-surface));
-}
 .bda-tile:focus-visible {
   outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color);
   outline-offset: 2px;
@@ -1223,9 +258,9 @@ button, input { font: inherit; }
   gap: 8px;
 }
 .bda-tile-art {
-  width: 40px;
-  height: 40px;
-  border-radius: 11px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: grid;
   place-items: center;
   background: color-mix(in srgb, var(--bda-tint) 16%, var(--studio-surface));
@@ -1236,17 +271,17 @@ button, input { font: inherit; }
   font-weight: 700;
   padding: 2px 7px;
   border-radius: 999px;
-  background: var(--lk-pale);
-  color: var(--lk-action);
+  background: var(--dsw-alias-state-business-soft);
+  color: var(--dsw-alias-state-business-primary);
 }
 .bda-tile-label {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
   line-height: 1.3;
 }
 .bda-tile-about {
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.45;
   color: var(--dsw-alias-label-secondary);
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1254,7 +289,6 @@ button, input { font: inherit; }
   overflow: hidden;
 }
 
-/* 类型胶囊栏与工作区范围切换 */
 .works-head-left {
   display: flex;
   flex-wrap: wrap;
@@ -1271,7 +305,7 @@ button, input { font: inherit; }
   background: var(--studio-surface-2);
 }
 .scope-btn {
-  height: 25px;
+  height: 24px;
   padding: 0 10px;
   border: 0;
   border-radius: 999px;
@@ -1295,9 +329,9 @@ button, input { font: inherit; }
 .type-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0 12px;
+  gap: 5px;
+  height: 28px;
+  padding: 0 11px;
   border-radius: 999px;
   border: 1px solid var(--dsw-alias-border-l2);
   background: var(--studio-surface);
@@ -1317,11 +351,10 @@ button, input { font: inherit; }
   color: var(--studio-surface);
 }
 
-/* 作品网格与列表 */
 .bda-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(272px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
   list-style: none;
 }
 .bda-item { position: relative; min-width: 0; }
@@ -1330,7 +363,7 @@ button, input { font: inherit; }
   flex-direction: column;
   width: 100%;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
   background: var(--studio-surface);
   color: inherit;
@@ -1355,7 +388,7 @@ button, input { font: inherit; }
   width: 100%;
   aspect-ratio: 16/10;
   overflow: hidden;
-  background: color-mix(in srgb, var(--bda-tint) 13%, var(--dsw-alias-bg-skeleton));
+  background: color-mix(in srgb, var(--bda-tint) 12%, var(--dsw-alias-bg-skeleton));
   border-bottom: 1px solid var(--dsw-alias-border-l2);
 }
 .bda-thumb { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; }
@@ -1415,24 +448,24 @@ button, input { font: inherit; }
 .bda-swatch:nth-child(2) { opacity: .6; }
 .bda-swatch:nth-child(3) { opacity: .3; }
 .bda-kpi { flex: 1; height: 24px; border-radius: 4px; background: var(--dsw-alias-interactive-bg-hover); border: 1px solid var(--dsw-alias-border-l2); }
-.bda-film { background: #101820; color: #fff; align-items: center; justify-content: center; }
+.bda-film { background: #18181b; color: #fff; align-items: center; justify-content: center; }
 .bda-film-title { color: #eee; width: 100%; text-align: center; margin-bottom: 4px; }
 .bda-film-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 4px; background: var(--bda-tint); }
 .bda-scope-tag {
   position: absolute;
-  left: 10px;
-  top: 10px;
+  left: 8px;
+  top: 8px;
   z-index: 3;
   padding: 2px 8px;
   border-radius: 999px;
   font-size: 10.5px;
   font-weight: 600;
-  background: rgba(16, 43, 70, 0.72);
+  background: rgba(24, 24, 27, 0.72);
   color: #fff;
   backdrop-filter: blur(6px);
 }
 .bda-scope-tag[data-current="true"] {
-  background: rgba(0, 127, 168, 0.88);
+  background: rgba(37, 99, 235, 0.88);
 }
 .bda-busy {
   position: absolute;
@@ -1442,7 +475,7 @@ button, input { font: inherit; }
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(11, 24, 38, .66);
+  background: rgba(24, 24, 27, .66);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -1460,7 +493,7 @@ button, input { font: inherit; }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px 13px;
+  padding: 11px 13px 12px;
   min-width: 0;
 }
 .bda-glyph {
@@ -1494,8 +527,8 @@ button, input { font: inherit; }
 }
 .bda-actions {
   position: absolute;
-  top: 9px;
-  right: 9px;
+  top: 8px;
+  right: 8px;
   z-index: 4;
   display: flex;
   align-items: center;
@@ -1523,7 +556,7 @@ button, input { font: inherit; }
   cursor: pointer;
 }
 .bda-act:hover { color: var(--dsw-alias-label-primary); border-color: var(--dsw-alias-border-l1); }
-.bda-act[data-on=true] { color: var(--lk-action); border-color: rgba(0, 185, 241, 0.45); }
+.bda-act[data-on=true] { color: var(--dsw-alias-state-business-primary); border-color: var(--dsw-alias-state-business-primary); }
 
 .bda-list { display: flex; flex-direction: column; gap: 7px; list-style: none; }
 .bda-row {
@@ -1531,7 +564,7 @@ button, input { font: inherit; }
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 10px 92px 10px 14px;
+  padding: 10px 88px 10px 14px;
   border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 12px;
   background: var(--studio-surface);
@@ -1553,12 +586,11 @@ button, input { font: inherit; }
   gap: 4px;
 }
 
-/* 失效记录治理托盘（处理全部“文件已不在”问题） */
 .missing-tray {
   margin-top: 6px;
   border-radius: 14px;
-  border: 1px solid light-dark(rgba(197, 48, 66, 0.24), rgba(248, 113, 133, 0.28));
-  background: light-dark(#fff8f9, rgba(197, 48, 66, 0.08));
+  border: 1px solid light-dark(rgba(220, 38, 38, 0.24), rgba(248, 113, 113, 0.28));
+  background: light-dark(#fef2f2, rgba(220, 38, 38, 0.08));
   overflow: hidden;
 }
 .missing-bar {
@@ -1569,12 +601,7 @@ button, input { font: inherit; }
   gap: 10px 16px;
   padding: 12px 16px;
 }
-.missing-bar-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
+.missing-bar-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .missing-bar-title {
   display: flex;
   align-items: center;
@@ -1594,15 +621,8 @@ button, input { font: inherit; }
   background: var(--dsw-alias-state-error-primary);
   color: #fff;
 }
-.missing-bar-desc {
-  font-size: 12px;
-  color: var(--dsw-alias-label-secondary);
-}
-.missing-bar-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.missing-bar-desc { font-size: 12px; color: var(--dsw-alias-label-secondary); }
+.missing-bar-actions { display: flex; align-items: center; gap: 8px; }
 .missing-list {
   list-style: none;
   border-top: 1px solid var(--dsw-alias-border-l2);
@@ -1621,12 +641,7 @@ button, input { font: inherit; }
   background: var(--studio-surface);
   border: 1px solid var(--dsw-alias-border-l2);
 }
-.missing-item-main {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
+.missing-item-main { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .missing-item-path {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 11px;
@@ -1636,18 +651,17 @@ button, input { font: inherit; }
   white-space: nowrap;
 }
 
-/* 预置精选示例大画幅卡片 */
 #examples {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
   list-style: none;
 }
 .bda-example {
   display: flex;
   flex-direction: column;
   border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
   background: var(--studio-surface);
   box-shadow: var(--studio-shadow-sm);
@@ -1681,23 +695,23 @@ button, input { font: inherit; }
 }
 .bda-example-label {
   position: absolute;
-  left: 10px;
-  top: 10px;
+  left: 8px;
+  top: 8px;
   z-index: 2;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: 6px;
-  background: rgba(16, 43, 70, 0.78);
+  background: rgba(24, 24, 27, 0.76);
   color: #fff;
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.7px;
   backdrop-filter: blur(4px);
 }
 .bda-example-body {
-  padding: 15px 16px 16px;
+  padding: 13px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
   flex: 1;
 }
 .bda-example-skill {
@@ -1706,34 +720,33 @@ button, input { font: inherit; }
   gap: 6px;
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--lk-action);
+  color: var(--dsw-alias-state-business-primary);
 }
-.bda-example h3 { font-size: 15px; font-weight: 700; letter-spacing: -0.2px; }
-.bda-example p { font-size: 12.5px; line-height: 1.6; color: var(--dsw-alias-label-secondary); }
+.bda-example h3 { font-size: 14.5px; font-weight: 700; letter-spacing: -0.2px; }
+.bda-example p { font-size: 12px; line-height: 1.55; color: var(--dsw-alias-label-secondary); }
 .bda-example-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 6px;
   margin-top: auto;
-  padding-top: 8px;
+  padding-top: 6px;
 }
 
-/* AI 跨技能工作流卡片 */
 #recipes {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
   list-style: none;
 }
 .recipe-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   height: 100%;
-  padding: 16px;
-  border-radius: 15px;
+  padding: 14px;
+  border-radius: 14px;
   border: 1px solid var(--dsw-alias-border-l2);
   background: var(--studio-surface);
   color: inherit;
@@ -1743,24 +756,19 @@ button, input { font: inherit; }
 }
 .recipe-card:hover {
   transform: translateY(-2px);
-  border-color: rgba(0, 185, 241, 0.45);
+  border-color: var(--dsw-alias-state-business-primary);
   box-shadow: var(--studio-shadow-md);
 }
 .recipe-step {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  color: var(--lk-action);
+  color: var(--dsw-alias-state-business-primary);
 }
-.recipe-title { font-size: 14.5px; font-weight: 700; margin-top: 4px; }
-.bda-recipe-desc { font-size: 12.5px; color: var(--dsw-alias-label-secondary); line-height: 1.55; margin-top: 4px; }
-.recipe-foot {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--lk-action);
-}
+.recipe-title { font-size: 14px; font-weight: 700; margin-top: 4px; }
+.bda-recipe-desc { font-size: 12px; color: var(--dsw-alias-label-secondary); line-height: 1.5; margin-top: 4px; }
+.recipe-foot { font-size: 12px; font-weight: 600; color: var(--dsw-alias-state-business-primary); }
 
-/* 菜单、弹窗、Toast 与全屏内嵌编辑器 */
 .bda-menu {
   position: fixed;
   z-index: 1000;
@@ -1770,7 +778,7 @@ button, input { font: inherit; }
   border-radius: 13px;
   background: var(--studio-surface);
   box-shadow: var(--studio-shadow-md);
-  font-size: 13.5px;
+  font-size: 13px;
 }
 .bda-menu-item {
   display: flex;
@@ -1790,7 +798,7 @@ button, input { font: inherit; }
 .bda-menu-item:hover, .bda-menu-item:focus-visible { background: var(--dsw-alias-interactive-bg-hover); outline: none; }
 .bda-menu-item[data-danger=true] { color: var(--dsw-alias-state-error-primary); }
 .bda-menu-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.bda-menu-value { margin-left: 16px; color: var(--dsw-alias-label-tertiary); font-size: 12.5px; }
+.bda-menu-value { margin-left: 16px; color: var(--dsw-alias-label-tertiary); font-size: 12px; }
 .bda-menu-count { margin-left: 16px; color: var(--dsw-alias-label-tertiary); font-variant-numeric: tabular-nums; }
 .bda-menu-key { margin-left: 20px; color: var(--dsw-alias-label-tertiary); font-size: 11.5px; }
 .bda-menu-rule { height: 1px; margin: 6px 4px; background: var(--dsw-alias-border-l2); }
@@ -1798,10 +806,10 @@ button, input { font: inherit; }
 .bda-menu-row { position: relative; }
 .bda-submenu {
   position: absolute;
-  left: calc(100% + 8px);
+  right: calc(100% + 8px);
   top: -6px;
   z-index: 1001;
-  min-width: 190px;
+  min-width: 185px;
   padding: 6px;
   border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 13px;
@@ -1835,24 +843,24 @@ button, input { font: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  background: rgba(8, 18, 28, .52);
+  padding: 20px;
+  background: rgba(9, 9, 11, .52);
   backdrop-filter: blur(4px);
 }
 .bda-scrim p { max-width: 46em; line-height: 1.7; }
 .bda-dialog {
   width: min(460px, 100%);
-  max-height: calc(100vh - 48px);
+  max-height: calc(100vh - 40px);
   overflow-y: auto;
-  padding: 22px;
-  border-radius: 18px;
+  padding: 20px;
+  border-radius: 16px;
   border: 1px solid var(--dsw-alias-border-l2);
   background: var(--studio-surface);
   box-shadow: 0 24px 64px -12px rgba(0,0,0,.45);
 }
-.bda-dialog.wide { width: min(940px, 100%); }
-.bda-dialog h2 { margin: 0 0 10px; font-size: 17px; font-weight: 700; line-height: 1.35; }
-.bda-dialog p { margin: 0 0 14px; color: var(--dsw-alias-label-secondary); font-size: 13px; }
+.bda-dialog.wide { width: min(880px, 100%); }
+.bda-dialog h2 { margin: 0 0 10px; font-size: 16.5px; font-weight: 700; line-height: 1.35; }
+.bda-dialog p { margin: 0 0 12px; color: var(--dsw-alias-label-secondary); font-size: 13px; }
 .bda-dialog input {
   width: 100%;
   height: 38px;
@@ -1862,10 +870,10 @@ button, input { font: inherit; }
   background: var(--dsw-alias-bg-base);
   color: var(--dsw-alias-label-primary);
   outline: none;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 .bda-dialog input:focus { border-color: var(--dsw-alias-state-business-primary); }
-.bda-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.bda-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 .bda-example-preview {
   overflow: hidden;
   width: 100%;
@@ -1881,13 +889,13 @@ button, input { font: inherit; }
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 33px;
-  padding: 0 13px;
+  height: 31px;
+  padding: 0 12px;
   border: 1px solid var(--dsw-alias-border-l2);
   border-radius: 9px;
   background: var(--studio-surface-2);
   color: var(--dsw-alias-label-primary);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: background-color .14s, border-color .14s;
@@ -1909,13 +917,13 @@ button, input { font: inherit; }
 .bda-toast {
   position: fixed;
   left: 50%;
-  bottom: 24px;
+  bottom: 20px;
   z-index: 1200;
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: min(560px, calc(100% - 32px));
-  padding: 10px 12px 10px 15px;
+  max-width: min(520px, calc(100% - 28px));
+  padding: 10px 12px 10px 14px;
   border: 1px solid var(--dsw-alias-border-l1);
   border-radius: 12px;
   background: var(--studio-surface);
@@ -1928,8 +936,8 @@ button, input { font: inherit; }
   padding: 3px 9px;
   border: 0;
   border-radius: 6px;
-  background: var(--lk-pale);
-  color: var(--lk-action);
+  background: var(--dsw-alias-state-business-soft);
+  color: var(--dsw-alias-state-business-primary);
   font-weight: 600;
   cursor: pointer;
 }
@@ -1950,40 +958,30 @@ button, input { font: inherit; }
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 44px 20px;
-  border-radius: 16px;
+  padding: 36px 18px;
+  border-radius: 14px;
   border: 1px dashed var(--dsw-alias-border-l1);
   background: color-mix(in srgb, var(--studio-surface) 65%, transparent);
   text-align: center;
   color: var(--dsw-alias-label-tertiary);
 }
 .bda-empty h2 { font-size: 15px; font-weight: 600; color: var(--dsw-alias-label-primary); }
-.bda-empty p { max-width: 440px; font-size: 13px; line-height: 1.65; color: var(--dsw-alias-label-secondary); }
+.bda-empty p { max-width: 420px; font-size: 13px; line-height: 1.65; color: var(--dsw-alias-label-secondary); }
 .bda-empty-compact {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 10px 16px;
-  padding: 13px 16px;
+  gap: 10px 14px;
+  padding: 13px 15px;
   border-radius: 14px;
   border: 1px dashed var(--dsw-alias-border-l1);
   background: color-mix(in srgb, var(--studio-surface) 72%, transparent);
   color: var(--dsw-alias-label-secondary);
   font-size: 13px;
 }
-.bda-empty-compact-copy {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  min-width: 0;
-}
-.bda-empty-compact-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
+.bda-empty-compact-copy { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.bda-empty-compact-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
 #editorView {
   display: flex;
@@ -1998,8 +996,8 @@ button, input { font: inherit; }
 .editor-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
+  gap: 10px;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--dsw-alias-border-l2);
   background: var(--studio-surface);
   flex: none;
@@ -2014,52 +1012,6 @@ button, input { font: inherit; }
 }
 #frame { flex: 1; border: 0; width: 100%; height: 100%; background: var(--dsw-alias-bg-base); }
 .hidden { display: none !important; }
-
-@supports (text-autospace: normal) or (text-spacing-trim: space-all) {
-  .bda-scrim p, .bda-name, .bda-meta, .ds-hero-desc {
-    text-autospace: normal;
-    text-spacing-trim: space-all;
-  }
-}
-
-@media (max-width: 1060px) {
-  .ds-stage { grid-template-columns: 1fr; }
-  .bda-tiles { grid-template-columns: repeat(auto-fill, minmax(176px, 1fr)); }
-}
-@media (max-width: 820px) {
-  .bda-page { grid-template-columns: 1fr; grid-template-rows: auto minmax(0, 1fr); }
-  .bda-rail {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 10px;
-    padding: 8px 12px;
-    border-right: 0;
-    border-bottom: 1px solid var(--dsw-alias-border-l2);
-  }
-  .rail-brand { padding: 0; gap: 8px; }
-  .rail-brand-tag { display: none; }
-  .rail-ws-card, .rail-skills-box { display: none; }
-  .rail-nav {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 2px;
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow-x: auto;
-  }
-  .rail-nav .rail-link {
-    width: auto;
-    padding: 5px 8px;
-    gap: 5px;
-    font-size: 12px;
-    white-space: nowrap;
-  }
-  .rail-footer { margin-top: 0; margin-left: auto; padding-top: 0; border-top: 0; flex: none; }
-  .ds-swatches-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .ds-comp-stage, .ds-scales-row { grid-template-columns: 1fr; }
-}
 `;
 
 function escHtml(v) {
@@ -2084,18 +1036,41 @@ function writePreference(key, value) {
   try { localStorage.setItem(key, value); } catch {}
 }
 
-const requestedLang = new URLSearchParams(location.search).get('lang');
-const rememberedLang = readPreference('agy-design-lang');
-let lang = Object.hasOwn(STR, requestedLang) ? requestedLang : Object.hasOwn(STR, rememberedLang) ? rememberedLang : INITIAL_LANG;
-writePreference('agy-design-lang', lang);
+const LOCALE_ALIAS_MAP = {
+  'zh': 'zh-CN', 'zh-cn': 'zh-CN', 'zh-hans': 'zh-CN', 'cn': 'zh-CN',
+  'zh-tw': 'zh-TW', 'zh-hant': 'zh-TW', 'zh-hk': 'zh-TW', 'tw': 'zh-TW', 'hk': 'zh-TW',
+  'ja': 'ja', 'ja-jp': 'ja', 'jp': 'ja',
+  'ko': 'ko', 'ko-kr': 'ko', 'kr': 'ko',
+  'es': 'es', 'es-es': 'es', 'es-419': 'es', 'es-mx': 'es',
+  'pt': 'pt', 'pt-br': 'pt', 'pt-pt': 'pt',
+  'fr': 'fr', 'fr-fr': 'fr', 'fr-ca': 'fr',
+  'ru': 'ru', 'ru-ru': 'ru',
+  'it': 'it', 'it-it': 'it',
+  'en': 'en', 'en-us': 'en', 'en-gb': 'en'
+};
 
-function locale() { return lang === 'en' ? 'en' : 'zh-CN'; }
-function t(key, values = {}) {
-  const text = STR[lang][key] ?? STR.zh[key] ?? key;
-  return text.replace(/\{(\w+)\}/g, (match, name) => String(values[name] ?? match));
+function normalizeLocale(raw, fallback) {
+  if (typeof raw === 'string') {
+    const clean = raw.trim().toLowerCase().replace(/_/g, '-');
+    if (Object.hasOwn(LOCALE_ALIAS_MAP, clean)) return LOCALE_ALIAS_MAP[clean];
+    const primary = clean.split('-')[0];
+    if (primary && Object.hasOwn(LOCALE_ALIAS_MAP, primary)) return LOCALE_ALIAS_MAP[primary];
+  }
+  return fallback !== undefined ? fallback : 'zh-CN';
 }
-function skillText(id, field) { return STR[lang]['skill.' + id + '.' + field] ?? id; }
-function exampleText(example, field) { return STR[lang]['example.' + example.id + '.' + field] ?? example[field] ?? ''; }
+
+const requestedLang = new URLSearchParams(location.search).get('lang');
+let lang = normalizeLocale(requestedLang || INITIAL_LANG, 'zh-CN');
+if (!Object.hasOwn(STR, lang)) lang = 'zh-CN';
+
+function locale() { return lang; }
+function t(key, values = {}) {
+  const dict = STR[lang] || STR['zh-CN'] || {};
+  const text = dict[key] ?? (STR.en && STR.en[key]) ?? (STR['zh-CN'] && STR['zh-CN'][key]) ?? key;
+  return String(text).replace(/\{(\w+)\}/g, (match, name) => String(values[name] ?? match));
+}
+function skillText(id, field) { return t('skill.' + id + '.' + field); }
+function exampleText(example, field) { return t('example.' + example.id + '.' + field) || example[field] || ''; }
 
 const SKILL_MAP = Object.fromEntries(SKILLS_CONFIG.map((s) => [s.id, s]));
 
@@ -2229,11 +1204,17 @@ const state = {
     pinned: false,
   },
   openingRoot: null,
-  dsTab: 'colors',
-  dsTheme: currentEffectiveScheme(),
-  dsCreating: false,
   showMissingDetails: false,
 };
+
+function setLocale(nextLang) {
+  const norm = normalizeLocale(nextLang, '');
+  if (!norm || !Object.hasOwn(STR, norm) || norm === lang) return;
+  lang = norm;
+  closeMenu();
+  closeDialog();
+  renderAll();
+}
 
 async function api(route, opts) {
   const r = await fetch(route, opts);
@@ -2246,6 +1227,10 @@ let parentPromptSeq = 0;
 window.addEventListener('message', (ev) => {
   const d = ev && ev.data;
   if (!d || typeof d !== 'object') return;
+  if (d.type === 'agy-design:locale-changed' && d.locale) {
+    setLocale(d.locale);
+    return;
+  }
   if (d.type === 'agy-design:workspace-changed') {
     reload();
     return;
@@ -2261,7 +1246,7 @@ async function startPromptWithFallback(payload) {
   const res = await api('/api/start', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ ...payload, locale: lang }),
   });
   if (res.ok) return res;
   if (res.starter && window.parent && window.parent !== window) {
@@ -2291,7 +1276,7 @@ async function startPromptWithFallback(payload) {
 function showToast(msg, undoTrashId) {
   const toast = document.getElementById('toast');
   toast.innerHTML = '<span style="display:inline-flex;align-items:center">' + SVG_ICONS.info + '</span><span class="bda-toast-text">' + esc(msg) + '</span>' +
-    (undoTrashId ? ('<button type="button" class="bda-toast-undo" id="toastUndoBtn">' + t('undo') + '</button>') : '') +
+    (undoTrashId ? ('<button type="button" class="bda-toast-undo" id="toastUndoBtn">' + esc(t('undo')) + '</button>') : '') +
     '<button type="button" class="bda-toast-close" id="toastCloseBtn"><svg viewBox="0 0 16 16" width="12" height="12" stroke="currentColor" stroke-width="1.3"><path d="m4.5 4.5 7 7m0-7-7 7"/></svg></button>';
   toast.className = 'bda-toast';
   document.getElementById('toastCloseBtn').onclick = () => { toast.className = 'hidden'; };
@@ -2351,11 +1336,6 @@ function scopedArtifacts() {
 function missingArtifacts() {
   return state.artifacts.filter((a) => a.missing);
 }
-function activeWorkspaceDesignSystem() {
-  return validArtifacts().find((a) =>
-    a.skill === 'claude-design-system' && a.inCurrentWorkspace
-  ) || null;
-}
 
 function matchesFilter(item) {
   if (item.missing) return false;
@@ -2403,13 +1383,6 @@ function isFilterActive() {
     state.filters.date !== 'any' || state.filters.sharing !== 'any' || state.filters.pinned;
 }
 
-function tokenHex(token, mode) {
-  if (typeof token.value === 'object' && token.value !== null) {
-    return token.value[mode] || token.value.light || '';
-  }
-  return String(token.value || '');
-}
-
 function renderSchemeButton() {
   const btn = document.getElementById('schemeBtn');
   if (!btn) return;
@@ -2417,228 +1390,25 @@ function renderSchemeButton() {
   btn.innerHTML = dark ? SVG_ICONS.sun : SVG_ICONS.moon;
 }
 
-function renderRailSkills() {
+function renderTypePills() {
   const valid = scopedArtifacts();
   const counts = new Map();
   valid.forEach((a) => counts.set(a.skill, (counts.get(a.skill) || 0) + 1));
-  const worksBadge = document.getElementById('railWorksCount');
-  if (worksBadge) worksBadge.textContent = String(valid.length);
-
-  const activeSingle = state.filters.types.length === 1 ? state.filters.types[0] : '';
   const allOn = state.filters.types.length === 0;
-
-  const railEl = document.getElementById('railSkillLinks');
-  if (railEl) {
-    railEl.innerHTML =
-      '<button type="button" class="rail-link" data-skill-filter="" data-active="' + allOn + '">' +
-      '<span class="rail-link-label">' + esc(t('allTypes')) + '</span>' +
-      '<span class="rail-count">' + valid.length + '</span></button>' +
-      SKILLS_CONFIG.map((s) =>
-        '<button type="button" class="rail-link" data-skill-filter="' + esc(s.id) + '" data-active="' + (activeSingle === s.id) + '">' +
-        '<span style="color:' + (TINTS[s.id] || 'currentColor') + ';display:inline-flex">' + typeIconSvg(s.id, 15) + '</span>' +
-        '<span class="rail-link-label" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(skillText(s.id, 'name')) + '</span>' +
-        '<span class="rail-count">' + (counts.get(s.id) || 0) + '</span></button>'
-      ).join('');
-  }
-
   const pillsEl = document.getElementById('typePills');
-  if (pillsEl) {
-    pillsEl.innerHTML =
-      '<button type="button" class="type-pill" data-skill-pill="" data-on="' + allOn + '">' +
-      esc(t('allTypes')) + ' · ' + valid.length + '</button>' +
-      SKILLS_CONFIG.map((s) =>
-        '<button type="button" class="type-pill" data-skill-pill="' + esc(s.id) + '" data-on="' + state.filters.types.includes(s.id) + '">' +
-        typeIconSvg(s.id, 13) +
-        '<span>' + esc(skillText(s.id, 'name')) + '</span>' +
-        '<span style="opacity:.7">' + (counts.get(s.id) || 0) + '</span></button>'
-      ).join('');
-  }
-}
-
-function renderDesignSystemStage() {
-  const activeDs = activeWorkspaceDesignSystem();
-  const eyebrow = document.getElementById('dsEyebrow');
-  const eyebrowText = document.getElementById('dsEyebrowText');
-  const heroTitle = document.getElementById('dsHeroTitle');
-  const heroDesc = document.getElementById('dsHeroDesc');
-  const primaryBtn = document.getElementById('dsPrimaryBtn');
-
-  if (activeDs && activeDs.inCurrentWorkspace) {
-    eyebrow.setAttribute('data-ready', 'true');
-    eyebrowText.textContent = t('dsEyebrowActive');
-    heroTitle.textContent = activeDs.title;
-    heroDesc.textContent = t('dsActiveDesc', { title: activeDs.title });
-    primaryBtn.textContent = state.dsCreating ? t('opening') : t('dsOpenBtn');
-  } else {
-    eyebrow.setAttribute('data-ready', 'false');
-    eyebrowText.textContent = t('dsEyebrowDefault');
-    heroTitle.textContent = t('dsHeroTitle');
-    heroDesc.textContent = t('dsHeroDesc');
-    primaryBtn.textContent = state.dsCreating ? t('creating') : t('dsInitBtn');
-  }
-  primaryBtn.disabled = state.dsCreating;
-
-  document.querySelectorAll('[data-ds-tab]').forEach((btn) => {
-    btn.setAttribute('aria-selected', btn.getAttribute('data-ds-tab') === state.dsTab ? 'true' : 'false');
-  });
-  document.querySelectorAll('[data-ds-theme]').forEach((btn) => {
-    btn.setAttribute('data-on', btn.getAttribute('data-ds-theme') === state.dsTheme ? 'true' : 'false');
-  });
-
-  renderDsLab();
-}
-
-function renderDsLab() {
-  const body = document.getElementById('dsLabBody');
-  if (!body) return;
-  const mode = state.dsTheme === 'dark' ? 'dark' : 'light';
-  body.setAttribute('data-token-theme', mode);
-
-  const colors = (LAKALA_TOKENS.color && LAKALA_TOKENS.color.tokens) || [];
-  if (state.dsTab === 'colors') {
-    body.innerHTML =
-      '<div class="ds-hint-row"><span>' + esc(t('dsCopyHint')) + '</span><span style="font-family:ui-monospace,monospace">lakala.com · ' + mode.toUpperCase() + '</span></div>' +
-      '<div class="ds-swatches-grid">' +
-      colors.map((tk) => {
-        const hex = tokenHex(tk, mode);
-        return '<button type="button" class="ds-swatch-card" data-copy-token="' + esc(tk.name) + '" data-copy-hex="' + esc(hex) + '" title="' + esc(tk.usage || tk.name) + '">' +
-          '<span class="ds-swatch-chip" style="background:' + esc(hex) + '"></span>' +
-          '<span class="ds-swatch-name">--' + esc(tk.name) + '</span>' +
-          '<span class="ds-swatch-hex">' + esc(hex.toUpperCase()) + '</span>' +
-          '</button>';
-      }).join('') +
-      '</div>';
-    return;
-  }
-
-  if (state.dsTab === 'type') {
-    const styles = (LAKALA_TOKENS.type && LAKALA_TOKENS.type.groups && LAKALA_TOKENS.type.groups[0] && LAKALA_TOKENS.type.groups[0].styles) || [];
-    const spaces = (LAKALA_TOKENS.spacing && LAKALA_TOKENS.spacing.tokens) || [];
-    const radii = (LAKALA_TOKENS.radius && LAKALA_TOKENS.radius.tokens) || [];
-    body.innerHTML =
-      '<div class="ds-type-list">' +
-      styles.slice(0, 6).map((st) => {
-        const rawPx = parseInt(st.fontSize, 10) || 16;
-        const previewPx = Math.min(26, Math.max(12, Math.round(rawPx * 0.52)));
-        return '<div class="ds-type-row">' +
-          '<span class="ds-type-token">' + esc(st.name) + '</span>' +
-          '<span class="ds-type-spec">' + esc(st.fontSize) + ' / ' + esc(st.lineHeight) + '</span>' +
-          '<span class="ds-type-sample" style="font-size:' + previewPx + 'px;font-weight:' + esc(st.fontWeight) + '">' + esc(st.usage || 'Lakala Digital Commerce') + '</span>' +
-          '</div>';
-      }).join('') +
-      '</div>' +
-      '<div class="ds-scales-row">' +
-      '<div class="ds-scale-box"><div class="ds-scale-title">' + esc(t('dsScaleSpacing')) + '</div>' +
-      '<div class="ds-space-bars">' +
-      spaces.slice(0, 8).map((sp) => {
-        const n = parseInt(sp.value, 10) || 4;
-        const h = Math.max(4, Math.round((n / 64) * 30));
-        return '<span class="ds-space-bar"><i style="height:' + h + 'px"></i><span>' + n + '</span></span>';
-      }).join('') +
-      '</div></div>' +
-      '<div class="ds-scale-box"><div class="ds-scale-title">' + esc(t('dsScaleRadius')) + '</div>' +
-      '<div class="ds-radii-row">' +
-      radii.map((rd) => {
-        const n = parseInt(rd.value, 10) || 4;
-        return '<span class="ds-radius-chip" style="border-radius:' + Math.min(18, Math.round(n * 0.6)) + 'px">' + n + '</span>';
-      }).join('') +
-      '</div></div>' +
-      '</div>';
-    return;
-  }
-
-  const map = Object.fromEntries(colors.map((tk) => [tk.name, tokenHex(tk, mode)]));
-  const actionBg = map['brand-action'] || '#007fa8';
-  const actionFg = mode === 'dark' ? '#072038' : '#ffffff';
-  const cardBg = map['surface-subtle'] || (mode === 'dark' ? '#172a39' : '#f5f8fa');
-  const borderCol = map['border-default'] || '#d7e3ea';
-  const okCol = map['state-success'] || '#15734f';
-  body.innerHTML =
-    '<div class="ds-comp-stage">' +
-    '<div class="ds-comp-box" style="background:' + esc(cardBg) + ';border-color:' + esc(borderCol) + '">' +
-    '<span class="ds-comp-label">BUTTONS &amp; STATES</span>' +
-    '<div style="display:flex;flex-wrap:wrap;gap:8px">' +
-    '<button type="button" class="ds-demo-btn" style="background:' + esc(actionBg) + ';color:' + esc(actionFg) + '">立即开通收款</button>' +
-    '<button type="button" class="ds-demo-btn sec">查看费率明细</button>' +
-    '</div>' +
-    '<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-top:2px">' +
-    '<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-weight:600;color:' + esc(okCol) + ';background:rgba(21,115,79,0.12)">● 实时清分正常 · T+1</span>' +
-    '<span style="opacity:.72">AA 4.8:1</span>' +
-    '</div>' +
-    '</div>' +
-    '<div class="ds-comp-box" style="background:' + esc(cardBg) + ';border-color:' + esc(borderCol) + '">' +
-    '<span class="ds-comp-label">FORM &amp; METRIC CARD</span>' +
-    '<input class="ds-demo-input" readonly value="lakala.merchant@store-01.cn" aria-label="Merchant account">' +
-    '<div style="display:flex;align-items:baseline;justify-content:space-between;margin-top:2px">' +
-    '<span style="font-size:11.5px;opacity:.72">今日净收款额</span>' +
-    '<strong style="font-size:19px;letter-spacing:-0.5px;color:' + esc(map['brand-primary'] || '#00b9f1') + '">¥ 128,460.00</strong>' +
-    '</div>' +
-    '</div>' +
-    '</div>' +
-    '<button type="button" class="ds-link-more" id="dsMoreCompsBtn">' + esc(t('dsOpenAllComps')) + '</button>';
-  const moreBtn = document.getElementById('dsMoreCompsBtn');
-  if (moreBtn) moreBtn.onclick = () => openDsInspectorDialog('Button');
-}
-
-function openDsInspectorDialog(initialComp = 'Cover') {
-  const names = Object.keys(DS_COMPONENTS);
-  if (!names.length) return;
-  let current = DS_COMPONENTS[initialComp] ? initialComp : names[0];
-  const activeDs = activeWorkspaceDesignSystem();
-
-  const renderModal = () => {
-    openDialog(
-      '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px">' +
-      '<h2 style="margin:0">' + esc(t('dsHeroTitle')) + '</h2>' +
-      '<div class="ds-tabs" id="dsModalTabs">' +
-      names.map((n) =>
-        '<button type="button" class="ds-tab" data-modal-comp="' + esc(n) + '" aria-selected="' + (n === current) + '">' + esc(n) + '</button>'
-      ).join('') +
-      '</div></div>' +
-      '<p>' + esc(t('dsModalSubtitle')) + '</p>' +
-      '<div class="bda-example-preview" id="dsModalPreview"><iframe sandbox="" title="' + esc(current) + '"></iframe></div>' +
-      '<div class="bda-dialog-actions">' +
-      '<button type="button" class="bda-btn" id="dsModalClose">' + esc(t('close')) + '</button>' +
-      '<button type="button" class="bda-btn" data-primary="true" id="dsModalOpenBtn">' +
-      esc(activeDs && activeDs.inCurrentWorkspace ? t('dsOpenBtn') : t('dsInitBtn')) + '</button>' +
-      '</div>',
-      true
-    );
-    document.getElementById('dsModalClose').onclick = closeDialog;
-    document.getElementById('dsModalOpenBtn').onclick = async () => {
-      closeDialog();
-      await triggerPrimaryDesignSystemAction();
-    };
-    document.getElementById('dsModalTabs').onclick = (e) => {
-      const b = e.target.closest('[data-modal-comp]');
-      if (!b) return;
-      current = b.getAttribute('data-modal-comp');
-      renderModal();
-    };
-    const preview = document.getElementById('dsModalPreview');
-    const frame = preview.querySelector('iframe');
-    const scale = Math.min(1, (preview.clientWidth || 860) / 1120);
-    frame.style.width = '1120px';
-    frame.style.height = '680px';
-    preview.style.height = Math.round(680 * scale) + 'px';
-    frame.style.transform = 'scale(' + scale + ')';
-    frame.srcdoc = DS_COMPONENTS[current] || '';
-  };
-  renderModal();
-}
-
-async function triggerPrimaryDesignSystemAction() {
-  const activeDs = activeWorkspaceDesignSystem();
-  if (activeDs && activeDs.inCurrentWorkspace) {
-    await openItem(activeDs);
-    return;
-  }
-  await instantiateTemplate('claude-design-system', true);
+  if (!pillsEl) return;
+  pillsEl.innerHTML =
+    '<button type="button" class="type-pill" data-skill-pill="" data-on="' + allOn + '">' +
+    esc(t('allTypes')) + ' · ' + valid.length + '</button>' +
+    SKILLS_CONFIG.map((s) =>
+      '<button type="button" class="type-pill" data-skill-pill="' + esc(s.id) + '" data-on="' + state.filters.types.includes(s.id) + '">' +
+      typeIconSvg(s.id, 13) +
+      '<span>' + esc(skillText(s.id, 'name')) + '</span>' +
+      '<span style="opacity:.7">' + (counts.get(s.id) || 0) + '</span></button>'
+    ).join('');
 }
 
 async function instantiateTemplate(templateId, openAfter = true) {
-  state.dsCreating = templateId === 'claude-design-system';
-  renderDesignSystemStage();
   try {
     const res = await api('/api/create', {
       method: 'POST',
@@ -2655,24 +1425,17 @@ async function instantiateTemplate(templateId, openAfter = true) {
     }
   } catch (err) {
     showToast(t('createFailed') + err.message);
-  } finally {
-    state.dsCreating = false;
-    renderDesignSystemStage();
   }
 }
 
 function renderTiles() {
-  const ordered = [
-    ...SKILLS_CONFIG.filter((s) => s.id === 'claude-design-system'),
-    ...SKILLS_CONFIG.filter((s) => s.id !== 'claude-design-system'),
-  ];
   const ul = document.getElementById('tiles');
-  ul.innerHTML = ordered.map((s) => {
+  ul.innerHTML = SKILLS_CONFIG.map((s) => {
     const featured = s.id === 'claude-design-system';
     return '<li style="--bda-tint:' + s.tint + '">' +
-      '<button type="button" class="bda-tile" data-skill="' + esc(s.id) + '" data-featured="' + featured + '">' +
+      '<button type="button" class="bda-tile" data-skill="' + esc(s.id) + '">' +
       '<span class="bda-tile-top">' +
-      '<span class="bda-tile-art">' + typeIconSvg(s.id, 22) + '</span>' +
+      '<span class="bda-tile-art">' + typeIconSvg(s.id, 20) + '</span>' +
       (featured ? ('<span class="bda-tile-pill">' + esc(t('recommendedFoundation')) + '</span>') : '') +
       '</span>' +
       '<span class="bda-tile-label">' + esc(skillText(s.id, 'name')) + '</span>' +
@@ -2756,16 +1519,13 @@ function syncSectionOrder() {
   const wsItems = workspaceArtifacts();
   const hasActiveWorks = wsItems.length > 0 || (state.scope === 'all' && validArtifacts().length > 0);
   const desired = hasActiveWorks
-    ? ['sec-ds', 'sec-works', 'sec-examples', 'sec-new', 'sec-workflows']
-    : ['sec-ds', 'sec-examples', 'sec-works', 'sec-new', 'sec-workflows'];
+    ? ['sec-works', 'sec-new', 'sec-examples', 'sec-workflows']
+    : ['sec-examples', 'sec-new', 'sec-works', 'sec-workflows'];
 
-  // 使用 CSS order 重排而非 DOM appendChild，避免浏览器销毁并重置示例卡片中的 srcdoc iframe
   desired.forEach((id, idx) => {
     const order = String(idx + 1);
     const sec = document.getElementById(id);
     if (sec && sec.style.order !== order) sec.style.order = order;
-    const btn = document.querySelector('#railNav [data-nav="' + id + '"]');
-    if (btn && btn.style.order !== order) btn.style.order = order;
   });
 }
 
@@ -2795,8 +1555,7 @@ function renderScopeSwitch() {
 
 function renderItems() {
   syncSectionOrder();
-  renderRailSkills();
-  renderDesignSystemStage();
+  renderTypePills();
   renderMissingTray();
   renderScopeSwitch();
 
@@ -2837,7 +1596,7 @@ function renderItems() {
       (otherCount > 0 && state.scope === 'workspace'
         ? ('<button type="button" class="bda-btn" id="emptyShowAllBtn">' + esc(t('emptyShowOtherWs', { count: otherCount })) + '</button>')
         : '') +
-      '<button type="button" class="bda-btn" data-primary="true" id="emptyInitDsBtn">' + esc(t('dsInitBtn')) + '</button>' +
+      '<button type="button" class="bda-btn" data-primary="true" id="emptyCreateSampleBtn">' + esc(t('emptyCreateSample')) + '</button>' +
       '</div></div>';
     const showAllBtn = document.getElementById('emptyShowAllBtn');
     if (showAllBtn) {
@@ -2846,8 +1605,8 @@ function renderItems() {
         renderItems();
       };
     }
-    const initBtn = document.getElementById('emptyInitDsBtn');
-    if (initBtn) initBtn.onclick = () => instantiateTemplate('claude-design-system', true);
+    const sampleBtn = document.getElementById('emptyCreateSampleBtn');
+    if (sampleBtn) sampleBtn.onclick = () => instantiateTemplate('claude-design', true);
     return;
   }
 
@@ -2855,7 +1614,7 @@ function renderItems() {
     container.innerHTML = '<ul class="bda-grid">' + items.map((it) => {
       const isOpening = state.openingRoot === it.root;
       const scopeLabel = state.workspaceRoot ? (it.inCurrentWorkspace ? t('currentWsBadge') : t('otherWsBadge')) : '';
-      return '<li class="bda-item" data-root="' + esc(it.root) + '" data-skill="' + esc(it.skill) + '" data-pinned="' + Boolean(it.pinned) + '" style="--bda-tint:' + (TINTS[it.skill] || '#007fa8') + '">' +
+      return '<li class="bda-item" data-root="' + esc(it.root) + '" data-skill="' + esc(it.skill) + '" data-pinned="' + Boolean(it.pinned) + '" style="--bda-tint:' + (TINTS[it.skill] || '#2563eb') + '">' +
         '<button type="button" class="bda-card" data-act="open" ' + (isOpening ? 'disabled' : '') + '>' +
         '<span class="bda-preview">' +
         '<span class="bda-sheet">' + drawnHtml(it.skill, it.title) + '</span>' +
@@ -2883,7 +1642,7 @@ function renderItems() {
   } else {
     container.innerHTML = '<ul class="bda-list">' + items.map((it) => {
       const isOpening = state.openingRoot === it.root;
-      return '<li class="bda-item" data-root="' + esc(it.root) + '" data-skill="' + esc(it.skill) + '" style="--bda-tint:' + (TINTS[it.skill] || '#007fa8') + '">' +
+      return '<li class="bda-item" data-root="' + esc(it.root) + '" data-skill="' + esc(it.skill) + '" style="--bda-tint:' + (TINTS[it.skill] || '#2563eb') + '">' +
         '<button type="button" class="bda-row" data-act="open" ' + (isOpening ? 'disabled' : '') + '>' +
         '<span class="bda-glyph">' + (isOpening ? '<span class="bda-spinner"></span>' : typeIconSvg(it.skill, 18)) + '</span>' +
         '<span class="bda-name">' + esc(it.title) + '</span>' +
@@ -2898,6 +1657,7 @@ function renderItems() {
         '</li>';
     }).join('') + '</ul>';
   }
+
   activateLivePreviews(container);
 }
 
@@ -3003,7 +1763,7 @@ function showActionsMenu(item, anchorEl) {
   const rect = anchorEl.getBoundingClientRect();
   const layer = document.getElementById('menuLayer');
   anchorEl.closest('.bda-item')?.setAttribute('data-menu', 'true');
-  layer.innerHTML = '<div class="bda-menu" style="left:' + Math.min(rect.left, window.innerWidth - 230) + 'px;top:' + (rect.bottom + 6) + 'px">' +
+  layer.innerHTML = '<div class="bda-menu" style="left:' + Math.min(rect.left, Math.max(8, window.innerWidth - 220)) + 'px;top:' + (rect.bottom + 6) + 'px">' +
     '<button type="button" class="bda-menu-item" data-menu-action="pin">' +
     SVG_ICONS.pin + '<span class="bda-menu-label">' + esc(item.pinned ? t('unpin') : t('pin')) + '</span><kbd class="bda-menu-key">P</kbd>' +
     '</button>' +
@@ -3111,7 +1871,7 @@ function openCreateDialog(skillId) {
   const canScaffold = Boolean(EXAMPLE_TEMPLATES[skillId]);
   openDialog(
     '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;color:' + (TINTS[s.id] || 'inherit') + '">' +
-    typeIconSvg(s.id, 26) +
+    typeIconSvg(s.id, 24) +
     '<h2 style="margin:0;color:var(--dsw-alias-label-primary)">' + esc(t('createTitle', { title: skillText(s.id, 'name') })) + '</h2>' +
     '</div>' +
     '<p>' + esc(skillText(s.id, 'about')) + '</p>' +
@@ -3160,7 +1920,7 @@ function showFilterMenu(anchorEl) {
   const dateLabels = { any: t('any'), today: t('today'), yesterday: t('yesterday'), week: t('week'), month: t('month') };
   const shareLabels = { any: t('any'), shared: t('shared'), private: t('private') };
 
-  layer.innerHTML = '<div class="bda-menu" style="right:' + (window.innerWidth - rect.right) + 'px;top:' + (rect.bottom + 6) + 'px">' +
+  layer.innerHTML = '<div class="bda-menu" style="right:' + Math.max(8, window.innerWidth - rect.right) + 'px;top:' + (rect.bottom + 6) + 'px">' +
     '<div class="bda-menu-row">' +
     '<button type="button" class="bda-menu-item">' +
     '<span class="bda-menu-label">' + esc(t('sortBy')) + '</span><span class="bda-menu-value">' + esc(sortLabels[state.filters.sort]) + '</span><span class="bda-menu-chev">' + SVG_ICONS.chevron + '</span>' +
@@ -3236,10 +1996,6 @@ function showFilterMenu(anchorEl) {
 }
 
 function openExamplePreviewModal(example) {
-  if (example.id === 'claude-design-system') {
-    openDsInspectorDialog('Cover');
-    return;
-  }
   openDialog(
     '<h2>' + esc(exampleText(example, 'title')) + '</h2>' +
     '<p>' + esc(exampleText(example, 'desc')) + '</p>' +
@@ -3261,7 +2017,7 @@ function openExamplePreviewModal(example) {
   if (example.html) {
     const preview = document.getElementById('examplePreview');
     const frame = preview.querySelector('iframe');
-    const scale = Math.min(1, (preview.clientWidth || 860) / 1200);
+    const scale = Math.min(1, (preview.clientWidth || 820) / 1200);
     preview.style.height = Math.round(750 * scale) + 'px';
     frame.style.transform = 'scale(' + scale + ')';
     frame.srcdoc = example.html;
@@ -3306,7 +2062,7 @@ function renderRecipes() {
 function updateWorkspaceBadge() {
   const el = document.getElementById('wsLabel');
   if (!el) return;
-  el.textContent = state.workspaceName ? state.workspaceName : t('railNoWorkspace');
+  el.textContent = state.workspaceName ? state.workspaceName : t('noWorkspace');
   el.title = state.workspaceRoot || '';
 }
 
@@ -3318,7 +2074,6 @@ function renderAll() {
   document.querySelectorAll('[data-i18n-title]').forEach((el) => { el.title = t(el.dataset.i18nTitle); });
   document.querySelectorAll('[data-i18n-label]').forEach((el) => { el.setAttribute('aria-label', t(el.dataset.i18nLabel)); });
   updateWorkspaceBadge();
-  document.getElementById('languageBtn').textContent = t('languageButton');
   renderSchemeButton();
   renderTiles();
   renderExamples();
@@ -3326,71 +2081,6 @@ function renderAll() {
   renderItems();
   document.documentElement.removeAttribute('data-i18n-pending');
 }
-
-document.getElementById('dsPrimaryBtn').onclick = triggerPrimaryDesignSystemAction;
-document.getElementById('dsInspectBtn').onclick = () => openDsInspectorDialog('Cover');
-document.getElementById('dsAgentBtn').onclick = async () => {
-  const activeDs = activeWorkspaceDesignSystem();
-  const payload = activeDs && activeDs.inCurrentWorkspace ? { root: activeDs.root } : { example: 'claude-design-system' };
-  const res = await startPromptWithFallback(payload);
-  if (res.ok) showToast(t('exampleStarted'));
-  else if (res.starter) {
-    try { await navigator.clipboard.writeText(res.starter); showToast(t('draftCopied') + (res.error || '')); }
-    catch { showToast(t('startFailed') + (res.error || '')); }
-  } else {
-    showToast(t('startFailed') + (res.error || t('unknownError')));
-  }
-};
-
-document.querySelector('.ds-lab-bar').onclick = (e) => {
-  const tabBtn = e.target.closest('[data-ds-tab]');
-  if (tabBtn) {
-    state.dsTab = tabBtn.getAttribute('data-ds-tab');
-    renderDesignSystemStage();
-    return;
-  }
-  const themeBtn = e.target.closest('[data-ds-theme]');
-  if (themeBtn) {
-    state.dsTheme = themeBtn.getAttribute('data-ds-theme');
-    renderDesignSystemStage();
-  }
-};
-
-document.getElementById('dsLabBody').onclick = async (e) => {
-  const swatch = e.target.closest('[data-copy-token]');
-  if (!swatch) return;
-  const token = '--' + swatch.getAttribute('data-copy-token');
-  const hex = swatch.getAttribute('data-copy-hex');
-  try {
-    await navigator.clipboard.writeText('var(' + token + ', ' + hex + ')');
-    showToast(t('dsTokenCopied', { token, hex: hex.toUpperCase() }));
-  } catch {
-    showToast(token + ': ' + hex);
-  }
-};
-
-document.querySelector('.bda-rail').onclick = (e) => {
-  const navBtn = e.target.closest('[data-nav]');
-  if (navBtn) {
-    const targetId = navBtn.getAttribute('data-nav');
-    const sec = document.getElementById(targetId);
-    if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    document.querySelectorAll('[data-nav]').forEach((b) => b.setAttribute('data-active', b === navBtn ? 'true' : 'false'));
-    return;
-  }
-  const skBtn = e.target.closest('[data-skill-filter]');
-  if (skBtn) {
-    const sk = skBtn.getAttribute('data-skill-filter');
-    if (!sk || (state.filters.types.length === 1 && state.filters.types[0] === sk)) {
-      state.filters.types = [];
-    } else {
-      state.filters.types = [sk];
-    }
-    renderItems();
-    const worksSec = document.getElementById('sec-works');
-    if (worksSec) worksSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-};
 
 document.getElementById('typePills').onclick = (e) => {
   const btn = e.target.closest('[data-skill-pill]');
@@ -3507,21 +2197,7 @@ document.getElementById('schemeBtn').onclick = () => {
   document.documentElement.dataset.scheme = next;
   writePreference('agy-design-scheme', next);
   writePreference('agy-design-scheme-manual', '1');
-  state.dsTheme = next;
   renderSchemeButton();
-  renderDesignSystemStage();
-};
-
-document.getElementById('languageBtn').onclick = () => {
-  lang = lang === 'zh' ? 'en' : 'zh';
-  writePreference('agy-design-lang', lang);
-  const url = new URL(location.href);
-  url.searchParams.set('lang', lang);
-  history.replaceState(history.state, '', url);
-  closeMenu();
-  closeDialog();
-  document.getElementById('toast').className = 'hidden';
-  renderAll();
 };
 
 document.getElementById('reloadBtn').onclick = async () => {
@@ -3529,18 +2205,9 @@ document.getElementById('reloadBtn').onclick = async () => {
   showToast(t('refreshed'));
 };
 
-const mainScroll = document.getElementById('mainScroll');
-mainScroll.addEventListener('scroll', () => {
-  const secs = [...document.querySelectorAll('.bda-content > section[id]')]
-    .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top);
-  let active = secs[0] ? secs[0].id : 'sec-ds';
-  for (const el of secs) {
-    if (el.getBoundingClientRect().top <= 160) active = el.id;
-  }
-  document.querySelectorAll('[data-nav]').forEach((b) => {
-    b.setAttribute('data-active', b.getAttribute('data-nav') === active ? 'true' : 'false');
-  });
-}, { passive: true });
+window.addEventListener('focus', () => {
+  void reload();
+});
 
 async function reload() {
   try {
@@ -3549,6 +2216,14 @@ async function reload() {
       state.artifacts = res.artifacts || [];
       state.workspaceName = res.workspaceName || '';
       state.workspaceRoot = res.workspaceRoot || '';
+      if (res.hostLocale) {
+        const nextLocale = normalizeLocale(res.hostLocale, '');
+        if (nextLocale && Object.hasOwn(STR, nextLocale) && nextLocale !== lang) {
+          lang = nextLocale;
+          renderAll();
+          return;
+        }
+      }
       updateWorkspaceBadge();
       renderItems();
     }
@@ -3567,7 +2242,7 @@ try {
 `;
 
 export function buildGalleryHtml({
-  requestedLang = 'zh',
+  requestedLang = 'zh-CN',
   requestedScheme = '',
   resolvedHostScheme = '',
   skills,
@@ -3575,18 +2250,17 @@ export function buildGalleryHtml({
   recipes,
   examples,
   templatesMap,
-  lakalaTokens,
-  dsComponents,
 }) {
-  const initialLang = requestedLang === 'en' ? 'en' : 'zh';
+  const initialLang = normalizeGalleryLocale(requestedLang || 'zh-CN');
   const hostSchemeValue = requestedScheme === 'dark' || requestedScheme === 'light'
     ? requestedScheme
     : resolvedHostScheme;
   const galleryStr = createGalleryStrings(skills, recipes, examples);
-  const text = (key) => escHtml(galleryStr[initialLang][key] ?? galleryStr.zh[key] ?? key);
+  const dict = galleryStr[initialLang] || galleryStr['zh-CN'];
+  const text = (key) => escHtml(dict[key] ?? galleryStr.en[key] ?? galleryStr['zh-CN'][key] ?? key);
 
   return `<!doctype html>
-<html data-i18n-pending lang="${initialLang === 'en' ? 'en' : 'zh-CN'}" data-initial-lang="${initialLang}"${hostSchemeValue ? ` data-host-scheme="${hostSchemeValue}"` : ''}>
+<html data-i18n-pending lang="${initialLang}" data-initial-lang="${initialLang}"${hostSchemeValue ? ` data-host-scheme="${hostSchemeValue}"` : ''}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -3594,9 +2268,7 @@ export function buildGalleryHtml({
 <script>
 try {
   const requested = new URLSearchParams(location.search).get('lang');
-  const saved = localStorage.getItem('agy-design-lang');
-  const selected = ['zh', 'en'].includes(requested) ? requested : ['zh', 'en'].includes(saved) ? saved : 'zh';
-  document.documentElement.lang = selected === 'en' ? 'en' : 'zh-CN';
+  if (requested) document.documentElement.lang = requested;
 } catch {}
 </script>
 <style>${GALLERY_CSS}</style>
@@ -3604,69 +2276,14 @@ try {
 <body>
 
 <div class="bda-page" id="listView">
-  <aside class="bda-rail">
-    <div class="rail-brand">
-      <span class="rail-mark" aria-hidden="true">
-        <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7">
-          <circle cx="9.5" cy="10" r="6.2"/>
-          <circle cx="13.5" cy="6.5" r="2.2" fill="#00b9f1" stroke="none"/>
-        </svg>
-      </span>
-      <span class="rail-brand-text">
-        <span class="rail-brand-name">Agy Design Studio</span>
-        <span class="rail-brand-tag">Antigravity</span>
-      </span>
-    </div>
-
-    <div class="rail-ws-card">
-      <div class="rail-ws-eyebrow" data-i18n="railWorkspaceLabel">${text('railWorkspaceLabel')}</div>
-      <div class="rail-ws-row">
-        <span class="rail-ws-dot" aria-hidden="true"></span>
-        <span class="bda-ws" id="wsLabel">${text('railNoWorkspace')}</span>
-      </div>
-    </div>
-
-    <nav class="rail-group rail-nav" id="railNav" aria-label="Sections">
-      <button type="button" class="rail-link" data-nav="sec-ds" data-active="true">
-        <span data-i18n="navDesignSystem">${text('navDesignSystem')}</span>
-        <span class="rail-badge">Lakala</span>
-      </button>
-      <button type="button" class="rail-link" data-nav="sec-examples" data-active="false">
-        <span data-i18n="navExamples">${text('navExamples')}</span>
-        <span class="rail-count">${examples.length}</span>
-      </button>
-      <button type="button" class="rail-link" data-nav="sec-works" data-active="false">
-        <span data-i18n="navWorks">${text('navWorks')}</span>
-        <span class="rail-count" id="railWorksCount">0</span>
-      </button>
-      <button type="button" class="rail-link" data-nav="sec-new" data-active="false">
-        <span data-i18n="new">${text('new')}</span>
-      </button>
-      <button type="button" class="rail-link" data-nav="sec-workflows" data-active="false">
-        <span data-i18n="navWorkflows">${text('navWorkflows')}</span>
-        <span class="rail-count">${recipes.length}</span>
-      </button>
-    </nav>
-
-    <div class="rail-group rail-skills-box">
-      <div class="rail-group-label" data-i18n="railSkillsLabel">${text('railSkillsLabel')}</div>
-      <div id="railSkillLinks" class="rail-group"></div>
-    </div>
-
-    <div class="rail-footer">
-      <button type="button" class="bda-tool" id="schemeBtn" data-i18n-title="schemeToggle" data-i18n-label="schemeToggle" title="${text('schemeToggle')}" aria-label="${text('schemeToggle')}"></button>
-      <button type="button" class="bda-btn" id="languageBtn" data-i18n-title="language" data-i18n-label="language" title="${text('language')}" aria-label="${text('language')}">${text('languageButton')}</button>
-      <button type="button" class="bda-tool" id="reloadBtn" data-i18n-title="refresh" data-i18n-label="refresh" title="${text('refresh')}" aria-label="${text('refresh')}">
-        <svg viewBox="0 0 16 16" width="15" height="15" stroke="currentColor" stroke-width="1.4" fill="none"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9L14 6m0-4v4h-4"/></svg>
-      </button>
-    </div>
-  </aside>
-
   <div class="bda-scroll" id="mainScroll">
     <div class="bda-content">
       <header class="bda-heading">
         <div class="bda-heading-title">
-          <h1 data-i18n="works">${text('works')}</h1>
+          <div class="bda-heading-row">
+            <h1 data-i18n="works">${text('works')}</h1>
+            <span class="bda-ws" id="wsLabel">${text('noWorkspace')}</span>
+          </div>
           <p class="bda-subtitle" data-i18n="studioSubtitle">${text('studioSubtitle')}</p>
         </div>
         <div class="bda-tools">
@@ -3683,61 +2300,12 @@ try {
           <button type="button" class="bda-tool" id="viewModeBtn" data-i18n-title="switchView" title="${text('switchView')}" data-i18n-label="switchView" aria-label="${text('switchView')}">
             <svg id="viewModeIcon" viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4"></svg>
           </button>
+          <button type="button" class="bda-tool" id="schemeBtn" data-i18n-title="schemeToggle" title="${text('schemeToggle')}" data-i18n-label="schemeToggle" aria-label="${text('schemeToggle')}"></button>
+          <button type="button" class="bda-tool" id="reloadBtn" data-i18n-title="refresh" title="${text('refresh')}" data-i18n-label="refresh" aria-label="${text('refresh')}">
+            <svg viewBox="0 0 16 16" width="15" height="15" stroke="currentColor" stroke-width="1.4" fill="none"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9L14 6m0-4v4h-4"/></svg>
+          </button>
         </div>
       </header>
-
-      <section class="ds-stage" id="sec-ds">
-        <div class="ds-hero">
-          <div class="ds-hero-orbit" aria-hidden="true"></div>
-          <div>
-            <div class="ds-eyebrow" id="dsEyebrow" data-ready="false">
-              <span class="ds-stat-dot"></span>
-              <span id="dsEyebrowText">${text('dsEyebrowDefault')}</span>
-            </div>
-            <div class="ds-brand-lockup">
-              <span class="ds-lakala-mark">lakala<i>.</i></span>
-            </div>
-            <h2 id="dsHeroTitle">${text('dsHeroTitle')}</h2>
-            <p class="ds-hero-desc" id="dsHeroDesc">${text('dsHeroDesc')}</p>
-          </div>
-
-          <div class="ds-stats">
-            <div class="ds-stat"><span class="ds-stat-dot"></span><span data-i18n="dsStatColors">${text('dsStatColors')}</span></div>
-            <div class="ds-stat"><span class="ds-stat-dot"></span><span data-i18n="dsStatThemes">${text('dsStatThemes')}</span></div>
-            <div class="ds-stat"><span class="ds-stat-dot"></span><span data-i18n="dsStatType">${text('dsStatType')}</span></div>
-            <div class="ds-stat"><span class="ds-stat-dot"></span><span data-i18n="dsStatComps">${text('dsStatComps')}</span></div>
-          </div>
-
-          <div class="ds-cta-row">
-            <button type="button" class="ds-btn-cyan" id="dsPrimaryBtn">${text('dsInitBtn')}</button>
-            <button type="button" class="ds-btn-ghost" id="dsInspectBtn" data-i18n="dsInspectBtn">${text('dsInspectBtn')}</button>
-            <button type="button" class="ds-btn-ghost" id="dsAgentBtn" data-i18n="dsAgentBtn">${text('dsAgentBtn')}</button>
-          </div>
-        </div>
-
-        <div class="ds-lab">
-          <div class="ds-lab-bar">
-            <div class="ds-tabs" role="tablist">
-              <button type="button" class="ds-tab" role="tab" data-ds-tab="colors" aria-selected="true" data-i18n="dsTabColors">${text('dsTabColors')}</button>
-              <button type="button" class="ds-tab" role="tab" data-ds-tab="type" aria-selected="false" data-i18n="dsTabType">${text('dsTabType')}</button>
-              <button type="button" class="ds-tab" role="tab" data-ds-tab="comps" aria-selected="false" data-i18n="dsTabComps">${text('dsTabComps')}</button>
-            </div>
-            <div class="ds-theme-switch" role="group" aria-label="Token theme">
-              <button type="button" class="ds-theme-btn" data-ds-theme="light" data-on="true">Light</button>
-              <button type="button" class="ds-theme-btn" data-ds-theme="dark" data-on="false">Dark</button>
-            </div>
-          </div>
-          <div class="ds-lab-body" id="dsLabBody" data-token-theme="light"></div>
-        </div>
-      </section>
-
-      <section class="studio-section" id="sec-examples">
-        <div class="section-head">
-          <h2 class="bda-section-title" data-i18n="examples">${text('examples')}</h2>
-          <span class="section-sub" data-i18n="examplesSubtitle">${text('examplesSubtitle')}</span>
-        </div>
-        <ul id="examples"></ul>
-      </section>
 
       <section class="studio-section" id="sec-works">
         <div class="section-head">
@@ -3757,6 +2325,14 @@ try {
           <span class="section-sub" data-i18n="newSubtitle">${text('newSubtitle')}</span>
         </div>
         <ul class="bda-tiles" id="tiles"></ul>
+      </section>
+
+      <section class="studio-section" id="sec-examples">
+        <div class="section-head">
+          <h2 class="bda-section-title" data-i18n="examples">${text('examples')}</h2>
+          <span class="section-sub" data-i18n="examplesSubtitle">${text('examplesSubtitle')}</span>
+        </div>
+        <ul id="examples"></ul>
       </section>
 
       <section class="studio-section" id="sec-workflows">
@@ -3791,8 +2367,6 @@ const SKILLS_CONFIG = ${safeJson(skills)};
 const RECIPES = ${safeJson(recipes)};
 const OFFICIAL_EXAMPLES = ${safeJson(examples)};
 const EXAMPLE_TEMPLATES = ${safeJson(templatesMap)};
-const LAKALA_TOKENS = ${safeJson(lakalaTokens)};
-const DS_COMPONENTS = ${safeJson(dsComponents)};
 ${GALLERY_CLIENT_SCRIPT}
 </script>
 </body>

@@ -1,0 +1,23 @@
+{
+  "unit.label": "Design",
+  "unit.title": "Открыть Agy Design Studio",
+  "unit.opening": "Открытие…",
+  "unit.openingTitle": "Открытие Agy Design Studio…",
+  "workbench.title": "Agy Design Studio",
+  "workbench.wsDefault": "Локальный проект",
+  "workbench.wsEmpty": "Локальная папка не открыта",
+  "workbench.loading": "Подготовка локального рабочего пространства и Design Studio…",
+  "workbench.openExternal": "Открыть в браузере ↗",
+  "workbench.close": "Закрыть",
+  "workbench.retry": "Повторить",
+  "workbench.openSettings": "Изменить порт",
+  "error.titlePort": "Локальный порт занят другим процессом",
+  "error.titleWorkspace": "Путь рабочего пространства ограничен",
+  "error.titleGeneric": "Не удалось запустить Agy Design Studio",
+  "error.fallbackMsg": "Локальный сервер Design Studio не отвечает. Повторите запуск или проверьте настройки порта.",
+  "error.noWorkspace": "Активное локальное рабочее пространство не найдено. Откройте локальную папку в Antigravity и повторите попытку.",
+  "error.remoteWorkspace": "Путь недоступен локально (удалённое или неподключённое хранилище). Design Studio поддерживает только локальные папки.",
+  "error.forbiddenPath": "Выбран каталог установки плагина или защищённая системная папка. Переключитесь на рабочий проект.",
+  "error.portInUse": "Порт Design Studio занят другим процессом. Укажите другой порт в настройках плагина и повторите попытку.",
+  "error.startTimeout": "Время ожидания локального сервера Design Studio истекло. Повторите запуск или проверьте журнал плагина."
+}

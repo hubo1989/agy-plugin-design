@@ -1,10 +1,11 @@
 'use strict';
 
 const { DESIGN_STYLES } = require('./styles');
+const { DEFAULT_LOCALE, extractLocaleFromPayload, t: tr } = require('./i18n');
 
 const DEFAULT_SETTINGS = Object.freeze({
   showTopbarButton: true,
-  openMode: 'embedded',
+  openMode: 'sidebar',
   shortcut: 'Mod+Alt+P',
   port: 3481,
   prewarmOnStartup: true
@@ -25,6 +26,16 @@ const SUCCESS_THROTTLE_MS = 2000;
 const CSP_HANDSHAKE_TIMEOUT_MS = 1500;
 
 let disposers = [];
+
+function normalizeSettings(raw = {}) {
+  return {
+    ...DEFAULT_SETTINGS,
+    ...(raw && typeof raw === 'object' ? raw : {}),
+    showTopbarButton: raw?.showTopbarButton !== false,
+    openMode: raw?.openMode === 'browser' ? 'browser' : 'sidebar',
+    shortcut: typeof raw?.shortcut === 'string' ? raw.shortcut : DEFAULT_SETTINGS.shortcut
+  };
+}
 
 function isAbsoluteWorkspaceHint(raw) {
   const s = String(raw || '').trim();
@@ -182,28 +193,35 @@ function matchesShortcut(ev, shortcutStr) {
 
 async function mount(ctx, mountOptions = {}) {
   const doc = globalThis.document;
-  let settings = {
-    ...DEFAULT_SETTINGS,
-    ...(ctx.settings?.get?.() || {})
-  };
+  let settings = normalizeSettings(ctx.settings?.get?.() || {});
   let effectiveScheme = 'dark';
+  let activeLocale = DEFAULT_LOCALE;
+  let hasExplicitLocale = false;
   let contextCascadeId = '';
   let stopUnit = null;
-  let popoverHandle = null;
-  let popoverBodyNode = null;
-  let workbenchBackdrop = null;
-  let workbenchDrawer = null;
+  let auxHostEl = null;
+  let auxStripEl = null;
+  let auxObserver = null;
+  let sidebarHostEl = null;
+  let workbenchEl = null;
+  let workbenchBrandEl = null;
   let workbenchWsPill = null;
+  let workbenchExternalBtn = null;
+  let workbenchCloseBtn = null;
   let workbenchBody = null;
   let workbenchIframe = null;
-  let isExpanded = false;
+  let lastErrorRes = null;
+  let lastWorkspaceName = '';
+  let autoOpenedAuxSidebar = false;
   let isWorkbenchOpen = false;
+  let isDisposed = false;
   let inFlightPromise = null;
   let lastSuccessOpenAt = 0;
   let lastReadyUrl = '';
   let lastWorkspaceRoot = '';
   let cspFallbackTimer = null;
   let wsDebounceTimer = null;
+  let stopAuxStyle = null;
   const activeTimers = new Set();
 
   function trackTimer(fn, ms) {
@@ -221,7 +239,7 @@ async function mount(ctx, mountOptions = {}) {
     activeTimers.delete(tid);
   }
 
-  const stopStyles = ctx.styles?.inject?.(DESIGN_STYLES, {
+  const stopShadowStyles = ctx.styles?.inject?.(DESIGN_STYLES, {
     scope: 'shadow',
     id: 'agy-design-styles'
   });
@@ -239,61 +257,160 @@ async function mount(ctx, mountOptions = {}) {
   }
 
   function setCapsuleBusy(busy) {
-    if (!stopUnit) return;
+    if (isDisposed || !stopUnit) return;
     try {
       void ctx.topbar.updateUnit('design', {
-        label: busy ? '打开中…' : 'Design',
+        label: busy ? tr(activeLocale, 'unit.opening') : tr(activeLocale, 'unit.label'),
         iconSvg: busy ? SPIN_ICON_SVG : DESIGN_ICON_SVG,
         tone: busy ? 'accent' : '',
-        title: busy ? '正在打开 Agy Design Studio…' : '打开 Agy Design Studio 设计工作台'
+        title: busy ? tr(activeLocale, 'unit.openingTitle') : tr(activeLocale, 'unit.title')
       }).catch?.(() => {});
     } catch {}
   }
 
   function getShadowRoot() {
+    if (ctx.mountRoot) return ctx.mountRoot;
     const hostEl = doc?.getElementById?.('agy-daddy-host') || doc?.querySelector?.('#agy-daddy-host');
     return hostEl?.shadowRoot || null;
   }
 
-  function appendSchemeParams(baseUrl) {
-    try {
-      const u = new URL(baseUrl);
-      u.searchParams.set('scheme', effectiveScheme);
-      u.searchParams.set('embed', '1');
-      return u.href;
-    } catch {
-      const sep = String(baseUrl || '').includes('?') ? '&' : '?';
-      return `${baseUrl}${sep}scheme=${encodeURIComponent(effectiveScheme)}&embed=1`;
+  function appendQueryParams(baseUrl) {
+    if (typeof URL !== 'undefined') {
+      try {
+        const u = new URL(baseUrl);
+        u.searchParams.set('scheme', effectiveScheme);
+        u.searchParams.set('lang', activeLocale);
+        u.searchParams.set('embed', '1');
+        return u.href;
+      } catch {}
     }
+    const sep = String(baseUrl || '').includes('?') ? '&' : '?';
+    return `${baseUrl}${sep}scheme=${encodeURIComponent(effectiveScheme)}&lang=${encodeURIComponent(activeLocale)}&embed=1`;
   }
 
-  function hideWorkbench() {
+  function findAuxSidebarElements() {
+    if (!doc?.querySelector) return { auxRoot: null, stripEl: null };
+    let auxRoot = null;
+    try {
+      auxRoot = doc.querySelector('[data-side-panel-open], [data-aux-pane-open]');
+    } catch {}
+    const stripEl = auxRoot?.querySelector?.('[data-side-panel-strip="true"]')
+      || doc.querySelector('[data-side-panel-strip="true"]')
+      || null;
+    if (!auxRoot && stripEl?.parentElement) {
+      auxRoot = stripEl.parentElement;
+    }
+    return { auxRoot, stripEl };
+  }
+
+  function isAuxCollapsed(root) {
+    if (!root || typeof root.getAttribute !== 'function') return false;
+    return root.getAttribute('data-side-panel-open') === 'false'
+      || root.getAttribute('data-aux-pane-open') === 'false';
+  }
+
+  function ensureAuxSidebarExpanded() {
+    const { auxRoot } = findAuxSidebarElements();
+    if (!auxRoot) return false;
+    if (isAuxCollapsed(auxRoot)) {
+      const toggleBtn = doc?.querySelector?.('[data-testid="toggle-aux-sidebar"]');
+      if (toggleBtn && typeof toggleBtn.click === 'function') {
+        autoOpenedAuxSidebar = true;
+        toggleBtn.click();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function syncSidebarHostBounds() {
+    if (!sidebarHostEl || !auxHostEl) return;
+    let stripHeight = 40;
+    try {
+      const rect = auxStripEl?.getBoundingClientRect?.();
+      if (rect && Number.isFinite(rect.height) && rect.height >= 16) {
+        stripHeight = Math.round(rect.height);
+      }
+    } catch {}
+    sidebarHostEl.style.setProperty('top', `${stripHeight}px`);
+  }
+
+  const onStripClick = (ev) => {
+    const tab = ev?.target?.closest?.('.agy-aux-tab, [data-testid="side-panel-new-tab-button"]');
+    if (tab && isWorkbenchOpen) {
+      autoOpenedAuxSidebar = false;
+      hideWorkbench({ fromNativeTab: true });
+    }
+  };
+
+  function cleanupAuxListeners() {
+    if (auxObserver) {
+      try { auxObserver.disconnect(); } catch {}
+      auxObserver = null;
+    }
+    if (auxStripEl && typeof auxStripEl.removeEventListener === 'function') {
+      try { auxStripEl.removeEventListener('click', onStripClick, true); } catch {}
+    }
+    auxStripEl = null;
+    if (auxHostEl && typeof auxHostEl.removeAttribute === 'function') {
+      try { auxHostEl.removeAttribute('data-agy-design-aux-host'); } catch {}
+    }
+    auxHostEl = null;
+  }
+
+  function hideWorkbench(opts = {}) {
     isWorkbenchOpen = false;
+    lastErrorRes = null;
     clearTrackedTimer(cspFallbackTimer);
     cspFallbackTimer = null;
-    if (workbenchBackdrop) {
-      workbenchBackdrop.setAttribute('data-hidden', 'true');
+    if (workbenchEl) {
+      workbenchEl.setAttribute('data-hidden', 'true');
+    }
+    if (sidebarHostEl) {
+      sidebarHostEl.style.setProperty('display', 'none');
     }
     if (workbenchIframe) {
       try { workbenchIframe.src = 'about:blank'; } catch {}
       workbenchIframe = null;
     }
+    if (!opts.fromAuxCollapse && !opts.fromNativeTab && !opts.disposing && autoOpenedAuxSidebar && auxHostEl) {
+      const hasOtherActiveTab = Boolean(
+        auxHostEl.querySelector?.('.agy-aux-tab[aria-selected="true"], [data-active="true"]')
+      );
+      if (!hasOtherActiveTab && !isAuxCollapsed(auxHostEl)) {
+        const toggleBtn = doc?.querySelector?.('[data-testid="toggle-aux-sidebar"]');
+        if (toggleBtn && typeof toggleBtn.click === 'function') {
+          toggleBtn.click();
+        }
+      }
+      autoOpenedAuxSidebar = false;
+    }
   }
 
-  function ensureWorkbenchDom() {
-    if (workbenchBackdrop) return workbenchBackdrop;
-    const shadow = getShadowRoot();
-    if (!shadow || !doc?.createElement) return null;
+  function showWorkbench() {
+    isWorkbenchOpen = true;
+    if (auxHostEl) {
+      ensureAuxSidebarExpanded();
+      syncSidebarHostBounds();
+    }
+    if (sidebarHostEl) {
+      sidebarHostEl.style.setProperty('display', 'block');
+    }
+    if (workbenchEl) {
+      workbenchEl.setAttribute('data-hidden', 'false');
+    }
+  }
 
-    const backdrop = doc.createElement('div');
-    backdrop.id = 'agy-design-workbench';
-    backdrop.className = 'agy-design-backdrop';
-    backdrop.setAttribute('data-hidden', 'true');
-    backdrop.setAttribute('data-agy-design-workbench', 'true');
-
-    const drawer = doc.createElement('div');
-    drawer.className = 'agy-design-drawer';
-    drawer.setAttribute('data-expanded', isExpanded ? 'true' : 'false');
+  function createWorkbenchPanel(surface) {
+    const panel = doc.createElement('div');
+    panel.id = 'agy-design-workbench';
+    panel.className = 'agy-design-workbench';
+    panel.setAttribute('data-hidden', 'true');
+    panel.setAttribute('data-surface', surface);
+    panel.setAttribute('data-agy-design-workbench', 'true');
+    if (surface === 'fallback') {
+      panel.setAttribute('data-browser-occluder', 'true');
+    }
 
     const header = doc.createElement('div');
     header.className = 'agy-design-header';
@@ -302,42 +419,36 @@ async function mount(ctx, mountOptions = {}) {
     left.className = 'agy-design-header-left';
     const brand = doc.createElement('span');
     brand.className = 'agy-design-brand';
-    brand.textContent = 'Agy Design Studio';
+    brand.textContent = tr(activeLocale, 'workbench.title');
     const wsPill = doc.createElement('span');
     wsPill.className = 'agy-design-ws-pill';
-    wsPill.textContent = '本机工作区';
+    wsPill.textContent = tr(activeLocale, 'workbench.wsDefault');
     left.appendChild(brand);
     left.appendChild(wsPill);
 
     const actions = doc.createElement('div');
     actions.className = 'agy-design-header-actions';
 
-    const expandBtn = doc.createElement('button');
-    expandBtn.type = 'button';
-    expandBtn.className = 'agy-design-btn';
-    expandBtn.textContent = '全屏切换';
-    expandBtn.addEventListener('click', () => {
-      isExpanded = !isExpanded;
-      drawer.setAttribute('data-expanded', isExpanded ? 'true' : 'false');
-    });
-
     const externalBtn = doc.createElement('button');
     externalBtn.type = 'button';
     externalBtn.className = 'agy-design-btn';
-    externalBtn.textContent = '浏览器打开 ↗';
+    externalBtn.setAttribute('data-agy-action', 'open-external');
+    externalBtn.textContent = tr(activeLocale, 'workbench.openExternal');
     externalBtn.addEventListener('click', () => {
       if (lastReadyUrl) {
-        void invokeBackend('design.openExternal', [appendSchemeParams(lastReadyUrl)]).catch?.(() => {});
+        void invokeBackend('design.openExternal', [appendQueryParams(lastReadyUrl)]).catch?.(() => {});
+      } else {
+        void invokeBackend('design.openBrowser', [collectWorkspaceContext(ctx, doc, contextCascadeId)]).catch?.(() => {});
       }
     });
 
     const closeBtn = doc.createElement('button');
     closeBtn.type = 'button';
     closeBtn.className = 'agy-design-btn';
-    closeBtn.textContent = '关闭';
-    closeBtn.addEventListener('click', hideWorkbench);
+    closeBtn.setAttribute('data-agy-action', 'close');
+    closeBtn.textContent = tr(activeLocale, 'workbench.close');
+    closeBtn.addEventListener('click', () => hideWorkbench());
 
-    actions.appendChild(expandBtn);
     actions.appendChild(externalBtn);
     actions.appendChild(closeBtn);
 
@@ -347,26 +458,88 @@ async function mount(ctx, mountOptions = {}) {
     const body = doc.createElement('div');
     body.className = 'agy-design-body';
 
-    drawer.appendChild(header);
-    drawer.appendChild(body);
-    backdrop.appendChild(drawer);
-    backdrop.addEventListener('click', (ev) => {
-      if (ev.target === backdrop) hideWorkbench();
-    });
+    panel.appendChild(header);
+    panel.appendChild(body);
 
-    shadow.appendChild(backdrop);
-    workbenchBackdrop = backdrop;
-    workbenchDrawer = drawer;
+    workbenchEl = panel;
+    workbenchBrandEl = brand;
     workbenchWsPill = wsPill;
+    workbenchExternalBtn = externalBtn;
+    workbenchCloseBtn = closeBtn;
     workbenchBody = body;
-    return backdrop;
+    return panel;
+  }
+
+  function ensureWorkbenchDom() {
+    if (isDisposed) return null;
+    if (workbenchEl) return workbenchEl;
+    if (!doc?.createElement) return null;
+
+    const { auxRoot, stripEl } = findAuxSidebarElements();
+    if (auxRoot && typeof auxRoot.appendChild === 'function' && typeof doc.createElement('div').attachShadow === 'function') {
+      if (!stopAuxStyle && ctx.styles?.inject) {
+        stopAuxStyle = ctx.styles.inject('[data-agy-design-aux-host="true"] { position: relative !important; }', {
+          scope: 'document',
+          id: 'agy-design-aux-host'
+        });
+      }
+      auxRoot.setAttribute('data-agy-design-aux-host', 'true');
+      auxHostEl = auxRoot;
+      auxStripEl = stripEl;
+
+      const sidebarHost = doc.createElement('div');
+      sidebarHost.id = 'agy-design-sidebar-host';
+      sidebarHost.setAttribute('data-browser-occluder', 'true');
+      sidebarHost.style.setProperty('position', 'absolute');
+      sidebarHost.style.setProperty('top', '40px');
+      sidebarHost.style.setProperty('left', '0');
+      sidebarHost.style.setProperty('right', '0');
+      sidebarHost.style.setProperty('bottom', '0');
+      sidebarHost.style.setProperty('z-index', '25');
+      sidebarHost.style.setProperty('display', 'none');
+
+      const sr = sidebarHost.attachShadow({ mode: 'open' });
+      const styleNode = doc.createElement('style');
+      styleNode.textContent = DESIGN_STYLES;
+      sr.appendChild(styleNode);
+
+      const panel = createWorkbenchPanel('sidebar');
+      sr.appendChild(panel);
+      auxRoot.appendChild(sidebarHost);
+      sidebarHostEl = sidebarHost;
+      syncSidebarHostBounds();
+
+      if (stripEl && typeof stripEl.addEventListener === 'function') {
+        stripEl.addEventListener('click', onStripClick, true);
+      }
+      if (typeof globalThis.MutationObserver === 'function') {
+        try {
+          auxObserver = new globalThis.MutationObserver(() => {
+            if (isAuxCollapsed(auxHostEl) && isWorkbenchOpen) {
+              hideWorkbench({ fromAuxCollapse: true });
+            }
+          });
+          auxObserver.observe(auxRoot, {
+            attributes: true,
+            attributeFilter: ['data-side-panel-open', 'data-aux-pane-open']
+          });
+        } catch {}
+      }
+      return panel;
+    }
+
+    const shadow = getShadowRoot();
+    if (!shadow) return null;
+    const panel = createWorkbenchPanel('fallback');
+    shadow.appendChild(panel);
+    return panel;
   }
 
   function renderWorkbenchSkeleton() {
     ensureWorkbenchDom();
-    if (!workbenchBackdrop || !workbenchBody || !doc?.createElement) return;
-    isWorkbenchOpen = true;
-    workbenchBackdrop.setAttribute('data-hidden', 'false');
+    if (!workbenchEl || !workbenchBody || !doc?.createElement) return;
+    lastErrorRes = null;
+    showWorkbench();
     workbenchIframe = null;
     workbenchBody.innerHTML = '';
 
@@ -376,11 +549,11 @@ async function mount(ctx, mountOptions = {}) {
 
     const status = doc.createElement('div');
     status.className = 'agy-design-skel-status';
-    status.innerHTML = `${SPIN_ICON_SVG}<span>正在准备本机工作区与设计工作台…</span>`;
+    status.innerHTML = `${SPIN_ICON_SVG}<span>${tr(activeLocale, 'workbench.loading')}</span>`;
 
     const bar1 = doc.createElement('div');
     bar1.className = 'agy-design-skel-bar';
-    bar1.style.width = '42%';
+    bar1.style.setProperty('width', '42%');
 
     const grid = doc.createElement('div');
     grid.className = 'agy-design-skel-grid';
@@ -396,11 +569,31 @@ async function mount(ctx, mountOptions = {}) {
     workbenchBody.appendChild(skel);
   }
 
+  function resolveLocalizedErrorMessage(res) {
+    const code = res?.code || '';
+    if (code === 'PORT_OCCUPIED_BY_OTHER') {
+      return tr(activeLocale, 'error.portInUse');
+    }
+    if (code === 'START_TIMEOUT') {
+      return tr(activeLocale, 'error.startTimeout');
+    }
+    if (code === 'REMOTE_OR_UNMOUNTED') {
+      return tr(activeLocale, 'error.remoteWorkspace');
+    }
+    if (code === 'FORBIDDEN_WORKSPACE_PATH') {
+      return tr(activeLocale, 'error.forbiddenPath');
+    }
+    if (code === 'NO_WORKSPACE') {
+      return tr(activeLocale, 'error.noWorkspace');
+    }
+    return res?.error || tr(activeLocale, 'error.fallbackMsg');
+  }
+
   function renderWorkbenchError(res) {
     ensureWorkbenchDom();
-    if (!workbenchBackdrop || !workbenchBody || !doc?.createElement) return;
-    isWorkbenchOpen = true;
-    workbenchBackdrop.setAttribute('data-hidden', 'false');
+    if (!workbenchEl || !workbenchBody || !doc?.createElement) return;
+    lastErrorRes = res || { code: 'ERROR' };
+    showWorkbench();
     workbenchIframe = null;
     workbenchBody.innerHTML = '';
 
@@ -411,14 +604,14 @@ async function mount(ctx, mountOptions = {}) {
     const title = doc.createElement('div');
     title.className = 'agy-design-error-title';
     title.textContent = res?.code === 'PORT_OCCUPIED_BY_OTHER'
-      ? '本地端口已被其他程序占用'
+      ? tr(activeLocale, 'error.titlePort')
       : (res?.code === 'REMOTE_OR_UNMOUNTED' || res?.code === 'FORBIDDEN_WORKSPACE_PATH'
-        ? '工作区路径受限'
-        : '无法启动 Agy Design Studio');
+        ? tr(activeLocale, 'error.titleWorkspace')
+        : tr(activeLocale, 'error.titleGeneric'));
 
     const msg = doc.createElement('div');
     msg.className = 'agy-design-error-msg';
-    msg.textContent = res?.error || '设计工作台本地服务未响应，请重试或检查端口设置。';
+    msg.textContent = resolveLocalizedErrorMessage(res);
 
     const actions = doc.createElement('div');
     actions.className = 'agy-design-error-actions';
@@ -426,9 +619,9 @@ async function mount(ctx, mountOptions = {}) {
     const retryBtn = doc.createElement('button');
     retryBtn.type = 'button';
     retryBtn.className = 'agy-design-btn agy-design-btn-primary';
-    retryBtn.textContent = '重试启动';
+    retryBtn.textContent = tr(activeLocale, 'workbench.retry');
     retryBtn.addEventListener('click', () => {
-      void triggerOpen({ forceEmbedded: true });
+      void triggerOpen({ forceSidebar: true });
     });
     actions.appendChild(retryBtn);
 
@@ -436,7 +629,7 @@ async function mount(ctx, mountOptions = {}) {
       const settingsBtn = doc.createElement('button');
       settingsBtn.type = 'button';
       settingsBtn.className = 'agy-design-btn';
-      settingsBtn.textContent = '修改端口设置';
+      settingsBtn.textContent = tr(activeLocale, 'workbench.openSettings');
       settingsBtn.addEventListener('click', () => {
         void ctx.settings?.open?.('plugins').catch?.(() => {});
       });
@@ -451,19 +644,20 @@ async function mount(ctx, mountOptions = {}) {
 
   function mountWorkbenchIframe(url, workspaceName) {
     ensureWorkbenchDom();
-    if (!workbenchBackdrop || !workbenchBody || !doc?.createElement) return;
-    isWorkbenchOpen = true;
-    workbenchBackdrop.setAttribute('data-hidden', 'false');
+    if (!workbenchEl || !workbenchBody || !doc?.createElement) return;
+    lastErrorRes = null;
+    lastWorkspaceName = workspaceName || '';
+    showWorkbench();
     if (workbenchWsPill) {
-      workbenchWsPill.textContent = workspaceName || '未打开本机工作区';
+      workbenchWsPill.textContent = lastWorkspaceName || tr(activeLocale, 'workbench.wsEmpty');
     }
     workbenchBody.innerHTML = '';
 
-    const fullUrl = appendSchemeParams(url);
+    const fullUrl = appendQueryParams(url);
     const frame = doc.createElement('iframe');
     frame.className = 'agy-design-iframe';
     frame.setAttribute('allow', 'clipboard-read; clipboard-write');
-    frame.setAttribute('title', 'Agy Design Studio');
+    frame.setAttribute('title', tr(activeLocale, 'workbench.title'));
     frame.src = fullUrl;
     workbenchIframe = frame;
     workbenchBody.appendChild(frame);
@@ -480,13 +674,53 @@ async function mount(ctx, mountOptions = {}) {
     }
   }
 
+  function refreshLocalizedChrome() {
+    setCapsuleBusy(Boolean(inFlightPromise));
+    if (workbenchBrandEl) {
+      workbenchBrandEl.textContent = tr(activeLocale, 'workbench.title');
+    }
+    if (workbenchExternalBtn) {
+      workbenchExternalBtn.textContent = tr(activeLocale, 'workbench.openExternal');
+    }
+    if (workbenchCloseBtn) {
+      workbenchCloseBtn.textContent = tr(activeLocale, 'workbench.close');
+    }
+    if (workbenchWsPill && !lastWorkspaceName) {
+      workbenchWsPill.textContent = isWorkbenchOpen
+        ? tr(activeLocale, 'workbench.wsEmpty')
+        : tr(activeLocale, 'workbench.wsDefault');
+    }
+    if (lastErrorRes && isWorkbenchOpen && !workbenchIframe) {
+      renderWorkbenchError(lastErrorRes);
+    } else if (isWorkbenchOpen && !workbenchIframe && workbenchBody?.querySelector?.('[data-agy-design-skeleton="true"]')) {
+      renderWorkbenchSkeleton();
+    }
+    if (workbenchIframe?.contentWindow) {
+      try {
+        workbenchIframe.contentWindow.postMessage({
+          type: 'agy-design:locale-changed',
+          locale: activeLocale
+        }, '*');
+      } catch {}
+    }
+  }
+
+  function applyLocalePayload(payload, markExplicit = true) {
+    const next = extractLocaleFromPayload(payload);
+    if (!next) return;
+    if (markExplicit) hasExplicitLocale = true;
+    if (next === activeLocale) return;
+    activeLocale = next;
+    refreshLocalizedChrome();
+  }
+
   async function handlePromptDelivery(starter) {
     if (!starter) return { ok: false, fallback: 'clipboard' };
     const busy = Boolean(ctx.hostDom?.isAssistantBusy?.());
     if (!busy && typeof ctx.hostDom?.sendText === 'function') {
       const sent = ctx.hostDom.sendText(starter);
       if (sent) {
-        if (isWorkbenchOpen) hideWorkbench();
+        // Keep right sidebar workbench open alongside left conversation pane
         return { ok: true, outcome: 'chat' };
       }
     }
@@ -499,26 +733,20 @@ async function mount(ctx, mountOptions = {}) {
   }
 
   async function triggerOpen(opts = {}) {
-    const mode = opts.forceEmbedded ? 'embedded' : settings.openMode;
+    const mode = opts.forceSidebar ? 'sidebar' : settings.openMode;
     if (inFlightPromise) {
-      if (mode !== 'browser' && workbenchBackdrop && !isWorkbenchOpen) {
-        isWorkbenchOpen = true;
-        workbenchBackdrop.setAttribute('data-hidden', 'false');
+      if (mode !== 'browser' && workbenchEl && !isWorkbenchOpen) {
+        showWorkbench();
       }
       return inFlightPromise;
-    }
-
-    if (!opts.forceEmbedded && mode === 'popover' && popoverHandle?.toggle) {
-      await popoverHandle.toggle();
-      return { ok: true, mode: 'popover' };
     }
 
     // Success-only 2000ms throttle: immediately focus ready workbench
     if (lastSuccessOpenAt > 0 && (Date.now() - lastSuccessOpenAt) < SUCCESS_THROTTLE_MS && lastReadyUrl) {
       if (mode === 'browser') {
-        void invokeBackend('design.openExternal', [appendSchemeParams(lastReadyUrl)]).catch?.(() => {});
+        void invokeBackend('design.openExternal', [appendQueryParams(lastReadyUrl)]).catch?.(() => {});
       } else {
-        mountWorkbenchIframe(lastReadyUrl, workbenchWsPill?.textContent || '');
+        mountWorkbenchIframe(lastReadyUrl, lastWorkspaceName);
       }
       return { ok: true, throttled: true, url: lastReadyUrl };
     }
@@ -541,12 +769,16 @@ async function mount(ctx, mountOptions = {}) {
               resolve({
                 ok: false,
                 code: 'START_TIMEOUT',
-                error: `设计工作台本地服务启动超时或未响应（端口 ${settings.port}），请点击重试或检查插件日志。`
+                error: tr(activeLocale, 'error.startTimeout')
               });
             }, WORKBENCH_TIMEOUT_MS + 300);
           })
         ]);
         clearTrackedTimer(timerId);
+
+        if (!hasExplicitLocale && res?.hostLocale) {
+          applyLocalePayload({ locale: res.hostLocale }, false);
+        }
 
         if (!res || !res.ok || !res.url) {
           lastSuccessOpenAt = 0;
@@ -561,7 +793,7 @@ async function mount(ctx, mountOptions = {}) {
         lastSuccessOpenAt = Date.now();
 
         if (mode === 'browser') {
-          await invokeBackend('design.openExternal', [appendSchemeParams(res.url)]);
+          await invokeBackend('design.openExternal', [appendQueryParams(res.url)]);
         } else {
           mountWorkbenchIframe(res.url, res.workspaceName || '');
         }
@@ -587,73 +819,6 @@ async function mount(ctx, mountOptions = {}) {
     return inFlightPromise;
   }
 
-  function renderPopoverContent(bodyNode) {
-    if (!bodyNode || !doc?.createElement) return;
-    bodyNode.innerHTML = '';
-    const card = doc.createElement('div');
-    card.className = 'agy-design-pop-card';
-
-    const list = doc.createElement('div');
-    list.className = 'agy-design-pop-list';
-    const placeholder = doc.createElement('div');
-    placeholder.className = 'agy-design-pop-meta';
-    placeholder.textContent = '正在读取工作区作品…';
-    list.appendChild(placeholder);
-
-    const openAllBtn = doc.createElement('button');
-    openAllBtn.type = 'button';
-    openAllBtn.className = 'agy-design-btn agy-design-btn-primary';
-    openAllBtn.textContent = '打开完整工作台';
-    openAllBtn.addEventListener('click', () => {
-      void popoverHandle?.toggle?.(false);
-      void triggerOpen({ forceEmbedded: true });
-    });
-
-    card.appendChild(list);
-    card.appendChild(openAllBtn);
-    bodyNode.appendChild(card);
-
-    const clickCtx = collectWorkspaceContext(ctx, doc, contextCascadeId);
-    void invokeBackend('design.listRecentProjects', [clickCtx]).then((res) => {
-      if (!popoverBodyNode || popoverBodyNode !== bodyNode) return;
-      list.innerHTML = '';
-      const items = Array.isArray(res?.items) ? res.items : [];
-      if (!items.length) {
-        const empty = doc.createElement('div');
-        empty.className = 'agy-design-pop-meta';
-        empty.textContent = '当前工作区暂无设计作品';
-        list.appendChild(empty);
-        return;
-      }
-      for (const it of items) {
-        const btn = doc.createElement('button');
-        btn.type = 'button';
-        btn.className = 'agy-design-pop-item';
-        btn.textContent = it.title || it.root;
-        btn.addEventListener('click', () => {
-          void popoverHandle?.toggle?.(false);
-          void triggerOpen({ forceEmbedded: true });
-        });
-        list.appendChild(btn);
-      }
-    }).catch(() => {});
-  }
-
-  popoverHandle = ctx.topbar.registerPopover({
-    id: 'design-quick',
-    anchorId: 'design',
-    title: '最近设计作品',
-    render(bodyNode) {
-      popoverBodyNode = bodyNode;
-      renderPopoverContent(bodyNode);
-    },
-    onToggle(open) {
-      if (open && popoverBodyNode) {
-        renderPopoverContent(popoverBodyNode);
-      }
-    }
-  });
-
   function syncTopbarUnit() {
     if (!settings.showTopbarButton) {
       if (typeof stopUnit === 'function') {
@@ -666,14 +831,31 @@ async function mount(ctx, mountOptions = {}) {
       stopUnit = ctx.topbar.registerUnit({
         id: 'design',
         order: 48,
-        label: 'Design',
+        label: tr(activeLocale, 'unit.label'),
         iconSvg: DESIGN_ICON_SVG,
-        title: '打开 Agy Design Studio 设计工作台',
+        title: tr(activeLocale, 'unit.title'),
         onClick() {
           void triggerOpen();
         }
       });
     }
+  }
+
+  // Subscribe to host locale + zh-cn plugin locale sticky state first
+  const stopHostLocaleSub = ctx.state?.subscribe?.('state:host.locale@1', (val) => {
+    applyLocalePayload(val, true);
+  });
+  const stopZhLangSub = ctx.state?.subscribe?.('state:zh-cn.lang@1', (val) => {
+    applyLocalePayload(val, true);
+  });
+
+  if (typeof ctx.state?.get === 'function') {
+    try {
+      applyLocalePayload(ctx.state.get('state:host.locale@1'), true);
+      if (!hasExplicitLocale) {
+        applyLocalePayload(ctx.state.get('state:zh-cn.lang@1'), true);
+      }
+    } catch {}
   }
 
   syncTopbarUnit();
@@ -704,7 +886,7 @@ async function mount(ctx, mountOptions = {}) {
   });
 
   const stopSettingsSub = ctx.settings?.onChange?.((nextValues) => {
-    settings = { ...DEFAULT_SETTINGS, ...(nextValues || {}) };
+    settings = normalizeSettings(nextValues);
     syncTopbarUnit();
   });
 
@@ -714,6 +896,14 @@ async function mount(ctx, mountOptions = {}) {
     if (data.type === 'agy-design:ready') {
       clearTrackedTimer(cspFallbackTimer);
       cspFallbackTimer = null;
+      if (workbenchIframe?.contentWindow) {
+        try {
+          workbenchIframe.contentWindow.postMessage({
+            type: 'agy-design:locale-changed',
+            locale: activeLocale
+          }, '*');
+        } catch {}
+      }
       return;
     }
     if (data.type === 'agy-design:prompt-request' && data.starter) {
@@ -750,7 +940,10 @@ async function mount(ctx, mountOptions = {}) {
       void invokeBackend('design.resolveWorkspace', [clickCtx]).then((res) => {
         if (res?.ok && res.workspaceRoot !== lastWorkspaceRoot) {
           lastWorkspaceRoot = res.workspaceRoot;
-          if (workbenchWsPill) workbenchWsPill.textContent = res.workspaceName || '本机工作区';
+          lastWorkspaceName = res.workspaceName || '';
+          if (workbenchWsPill) {
+            workbenchWsPill.textContent = lastWorkspaceName || tr(activeLocale, 'workbench.wsDefault');
+          }
           try {
             workbenchIframe?.contentWindow?.postMessage?.({
               type: 'agy-design:workspace-changed',
@@ -773,14 +966,16 @@ async function mount(ctx, mountOptions = {}) {
   }
 
   disposers.push(
+    stopHostLocaleSub,
+    stopZhLangSub,
     stopThemeSub,
     stopContextSub,
     stopOpenEvent,
     stopPromptEvent,
     stopSettingsSub,
-    stopStyles,
+    stopShadowStyles,
+    () => { if (typeof stopAuxStyle === 'function') stopAuxStyle(); stopAuxStyle = null; },
     () => { if (typeof stopUnit === 'function') stopUnit(); stopUnit = null; },
-    () => { popoverHandle?.dispose?.(); popoverHandle = null; popoverBodyNode = null; },
     () => {
       if (win && typeof win.removeEventListener === 'function') {
         win.removeEventListener('message', onMessage);
@@ -799,13 +994,21 @@ async function mount(ctx, mountOptions = {}) {
       wsDebounceTimer = null;
     },
     () => {
-      hideWorkbench();
-      if (workbenchBackdrop && typeof workbenchBackdrop.remove === 'function') {
-        workbenchBackdrop.remove();
+      isDisposed = true;
+      hideWorkbench({ disposing: true });
+      cleanupAuxListeners();
+      if (sidebarHostEl && typeof sidebarHostEl.remove === 'function') {
+        sidebarHostEl.remove();
       }
-      workbenchBackdrop = null;
-      workbenchDrawer = null;
+      if (workbenchEl && typeof workbenchEl.remove === 'function') {
+        workbenchEl.remove();
+      }
+      sidebarHostEl = null;
+      workbenchEl = null;
+      workbenchBrandEl = null;
       workbenchWsPill = null;
+      workbenchExternalBtn = null;
+      workbenchCloseBtn = null;
       workbenchBody = null;
       workbenchIframe = null;
     }
@@ -821,6 +1024,7 @@ function dispose() {
 module.exports = {
   mount,
   dispose,
+  normalizeSettings,
   matchesShortcut,
   collectWorkspaceContext
 };

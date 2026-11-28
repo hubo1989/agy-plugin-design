@@ -1,32 +1,20 @@
 {
-  "claude-design-system": {
-    "title": "拉卡拉 · 品牌设计系统",
-    "desc": "提炼自拉卡拉官网的品牌青与深蓝视觉体系，含双主题 Token、5 套实时组件与品牌规范手册。",
-    "points": "12 枚双主题色彩 Token、7 级字阶、5 套实时组件预览与无障碍手册。",
-    "dirName": "lakala-design-system"
-  },
   "claude-design": {
-    "title": "数字商业 · 品牌首页",
-    "desc": "开阔留白、品牌青点缀与立体支付卡片，构筑干练可信的数字商业第一印象。",
-    "points": "1200 × 800 可编辑 DC 画布，含品牌导航、双栏主视觉、立体支付卡与三大业务入口。",
-    "dirName": "lakala-website"
+    "title": "单页画布示例",
+    "desc": "包含一个 880 × 560 可编辑画板的极简通用画布骨架，可直接打开编辑或交由 Agent 延展。",
+    "points": "880 × 560 可编辑 DC 画板与基础结构索引。",
+    "dirName": "design-demo"
   },
   "claude-slides": {
-    "title": "连接下一站 · 品牌提案",
-    "desc": "深蓝星空轨道封面、三栏设计原则与青色收束页，一套可直接演示的三页提案。",
-    "points": "1920 × 1080 标准演示画布，含封面、设计原则、收束共 3 页原生可编辑幻灯片。",
-    "dirName": "lakala-brand-deck"
+    "title": "通用演示封面示例",
+    "desc": "1920 × 1080 标准演示文稿封面骨架，支持新增幻灯片、实时预览与导出 PDF / HTML / PPTX。",
+    "points": "1920 × 1080 标准封面幻灯片与 deck.json 索引。",
+    "dirName": "slides-demo"
   },
-  "lakala-mobile": {
-    "title": "轻盈日常 · 商户移动端",
-    "desc": "把高频收款、账单核对与经营助手放进清晰亲和的掌上工作台。",
-    "points": "1200 × 800 可编辑移动端展示画布，含手机样机、快捷收款金刚区、经营服务卡与底部标签栏。",
-    "dirName": "lakala-mobile"
-  },
-  "lakala-poster": {
-    "title": "大有可为 · 品牌视觉海报",
-    "desc": "高饱和品牌青满版构图，搭配几何双环轨道与超大号中文标题张力。",
-    "points": "1000 × 800 可编辑品牌海报画布，满版品牌青底色、双轨道几何图形与版式栅格页脚。",
-    "dirName": "lakala-brand-poster"
+  "claude-design-system": {
+    "title": "通用设计系统骨架",
+    "desc": "中性的设计系统项目骨架，包含 design-system.json、tokens.json 与说明文档，供工作区 Agent 持续完善。",
+    "points": "design-system.json、空 tokens.json 与可拓展文档入口。",
+    "dirName": "design-system-demo"
   }
 }

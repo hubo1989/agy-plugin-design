@@ -1,0 +1,23 @@
+{
+  "unit.label": "Design",
+  "unit.title": "Agy Design Studio を開く",
+  "unit.opening": "起動中…",
+  "unit.openingTitle": "Agy Design Studio を開いています…",
+  "workbench.title": "Agy Design Studio",
+  "workbench.wsDefault": "ローカルワークスペース",
+  "workbench.wsEmpty": "ローカルワークスペース未選択",
+  "workbench.loading": "ローカルワークスペースとデザインスタジオを準備しています…",
+  "workbench.openExternal": "ブラウザで開く ↗",
+  "workbench.close": "閉じる",
+  "workbench.retry": "再試行",
+  "workbench.openSettings": "ポート設定を変更",
+  "error.titlePort": "ローカルポートが既に使用中です",
+  "error.titleWorkspace": "ワークスペースパスが制限されています",
+  "error.titleGeneric": "Agy Design Studio を起動できません",
+  "error.fallbackMsg": "デザインスタジオのローカルサーバーが応答しません。再試行するかポート設定を確認してください。",
+  "error.noWorkspace": "アクティブなローカルワークスペースが見つかりません。Antigravity でローカルフォルダを開いてから再試行してください。",
+  "error.remoteWorkspace": "ワークスペースパスにローカルからアクセスできません（リモートまたは未マウント）。デザインスタジオはローカルワークスペースのみ対応しています。",
+  "error.forbiddenPath": "選択中のパスはプラグイン格納先または保護されたシステムディレクトリです。プロジェクトのワークスペースに切り替えてください。",
+  "error.portInUse": "デザインスタジオのポートは別のプロセスで使用中です。プラグイン設定でポートを変更して再試行してください。",
+  "error.startTimeout": "デザインスタジオのローカルサーバーがタイムアウトしました。再起動するかログを確認してください。"
+}

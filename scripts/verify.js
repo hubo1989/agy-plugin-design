@@ -8,6 +8,19 @@ const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(process.argv[2] || path.resolve(__dirname, '..'));
 
+const SUPPORTED_LOCALES = [
+  'zh-CN',
+  'zh-TW',
+  'ja',
+  'ko',
+  'es',
+  'pt',
+  'fr',
+  'ru',
+  'it',
+  'en'
+];
+
 const FORBIDDEN_COLOR_PATTERNS = [
   /#10b981/i,
   /#34d399/i,
@@ -28,6 +41,8 @@ const FORBIDDEN_PERMS = new Set([
   'bridge:route',
   'fs:brain-read'
 ]);
+
+const FORBIDDEN_BRAND_RE = new RegExp(`${['la', 'kala'].join('')}|\\u62c9\\u5361\\u62c9`, 'i');
 
 function locateHostDir() {
   const candidates = [
@@ -53,6 +68,37 @@ function assertRelativeAssetPath(rootDir, relPath, label) {
   assert(fs.existsSync(resolved) && fs.statSync(resolved).isFile(), `${label} file does not exist: ${relPath}`);
 }
 
+function assertLocaleMap10(obj, label) {
+  assert(obj && typeof obj === 'object' && !Array.isArray(obj), `${label} must be a 10-locale map`);
+  for (const loc of SUPPORTED_LOCALES) {
+    assert(typeof obj[loc] === 'string' && obj[loc].trim().length > 0, `${label} missing translation for ${loc}`);
+  }
+}
+
+function scanNoForbiddenBrand(rootDir) {
+  const SKIP_DIRS = new Set(['.git', 'node_modules', 'vendor', 'dist', 'assets']);
+  const TEXT_EXTS = new Set(['.js', '.mjs', '.cjs', '.json', '.html', '.css', '.md', '.sh', '.txt']);
+  const hits = [];
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (SKIP_DIRS.has(entry.name)) continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!TEXT_EXTS.has(path.extname(entry.name).toLowerCase())) continue;
+      const text = fs.readFileSync(full, 'utf8');
+      if (FORBIDDEN_BRAND_RE.test(text)) {
+        hits.push(path.relative(rootDir, full));
+      }
+    }
+  }
+  walk(rootDir);
+  assert(hits.length === 0, `Forbidden brand reference found in non-vendor files: ${hits.join(', ')}`);
+}
+
 function verify() {
   // 1. Package dependencies check
   const pkgPath = path.join(ROOT, 'package.json');
@@ -68,6 +114,13 @@ function verify() {
   assert(manifest.id === 'hubo1989.design', 'agy-plugin.json id must be hubo1989.design');
   assert(manifest.publisher === 'hubo1989', 'agy-plugin.json publisher must be hubo1989');
   assert(manifest.world === 'isolated', 'agy-plugin.json world must be isolated');
+  assert(!manifest.contributes?.['topbar.popovers'], 'agy-plugin.json must not declare topbar.popovers');
+  assert(Boolean(manifest.consumes?.['zh-cn']), 'agy-plugin.json must declare optional consumes["zh-cn"]');
+  assertLocaleMap10(manifest.displayName, 'agy-plugin.json displayName');
+  assertLocaleMap10(manifest.description, 'agy-plugin.json description');
+  for (const cmd of manifest.contributes?.commands || []) {
+    assertLocaleMap10(cmd.title, `agy-plugin.json command ${cmd.id} title`);
+  }
   for (const perm of manifest.permissions || []) {
     assert(!FORBIDDEN_PERMS.has(perm), `Forbidden permission declared: ${perm}`);
   }
@@ -82,6 +135,24 @@ function verify() {
   const schemaPath = path.join(ROOT, manifest.contributes?.settings?.schema || 'settings.schema.json');
   const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
   assert(Array.isArray(schema.fields) && schema.fields.length >= 4, 'settings.schema.json must declare fields');
+  assertLocaleMap10(schema.title, 'settings.schema.json title');
+  const openModeField = schema.fields.find((f) => f.key === 'openMode');
+  assert(openModeField && openModeField.default === 'sidebar', 'openMode default must be "sidebar"');
+  assert.deepEqual?.(openModeField.options.map((o) => o.value), ['sidebar', 'browser']);
+  assert(
+    JSON.stringify(openModeField.options.map((o) => o.value)) === JSON.stringify(['sidebar', 'browser']),
+    'openMode options must strictly be ["sidebar", "browser"]'
+  );
+  for (const field of schema.fields) {
+    assertLocaleMap10(field.label, `settings field ${field.key} label`);
+    assertLocaleMap10(field.description, `settings field ${field.key} description`);
+    for (const opt of field.options || []) {
+      assertLocaleMap10(opt.label, `settings field ${field.key} option ${opt.value} label`);
+    }
+  }
+  for (const act of schema.actions || []) {
+    assertLocaleMap10(act.label, `settings action ${act.id} label`);
+  }
 
   // Cross-check with agy-daddy-host validator when available
   const hostDir = locateHostDir();
@@ -103,23 +174,25 @@ function verify() {
       assert(!re.test(text), `Theme color gate violation in src/${name}: matched ${re}`);
     }
     assert(!text.includes('registerSection'), `Forbidden API "registerSection" in src/${name}`);
+    assert(!text.includes('registerPopover'), `Forbidden API "registerPopover" in src/${name}`);
   }
 
-  // 5. Required runtime & compliance files
+  // 5. Required runtime & compliance files (including all 10 locales)
   const requiredFiles = [
     'LICENSE',
     'NOTICE.md',
     'README.md',
     'vendor-rewrites.json',
     'vendor/manifest.json',
-    'locales/zh-CN.json',
-    'locales/en.json',
+    ...SUPPORTED_LOCALES.map((loc) => `locales/${loc}.json`),
+    'src/i18n.js',
     'src/node.js',
     'src/renderer.js',
     'src/styles.js',
     'src/workspace-resolver.js',
     'src/gallery-server.mjs',
     'src/gallery-ui.mjs',
+    'src/gallery-locales.mjs',
     'src/builtin-library.mjs',
     'src/post-guard.mjs',
     'src/skills-meta.mjs',
@@ -141,9 +214,27 @@ function verify() {
     assert(fs.existsSync(path.join(ROOT, rel)) && fs.statSync(path.join(ROOT, rel)).isFile(), `Missing required file: ${rel}`);
   }
 
-  // 6. Verify NOTICE.md three-tier licensing disclosure
+  // 5b. Validate all 10 locale files share identical keys & non-empty values
+  const enLocale = JSON.parse(fs.readFileSync(path.join(ROOT, 'locales', 'en.json'), 'utf8'));
+  const expectedKeys = Object.keys(enLocale).sort();
+  assert(expectedKeys.length >= 13, 'locales/en.json must declare host UI keys');
+  for (const loc of SUPPORTED_LOCALES) {
+    const data = JSON.parse(fs.readFileSync(path.join(ROOT, 'locales', `${loc}.json`), 'utf8'));
+    const keys = Object.keys(data).sort();
+    assert(
+      JSON.stringify(keys) === JSON.stringify(expectedKeys),
+      `locales/${loc}.json keys mismatch against en.json`
+    );
+    for (const k of expectedKeys) {
+      assert(!k.startsWith('popover.') && k !== 'workbench.toggleExpand', `Obsolete key in locales/${loc}.json: ${k}`);
+      assert(typeof data[k] === 'string' && data[k].trim().length > 0, `Empty translation ${k} in locales/${loc}.json`);
+    }
+  }
+
+  // 6. Verify NOTICE.md three-tier licensing disclosure & zero forbidden brand leftovers
   const notice = fs.readFileSync(path.join(ROOT, 'NOTICE.md'), 'utf8');
   assert(/Anthropic/i.test(notice) && /NOT.*MIT/i.test(notice), 'NOTICE.md must explicitly state Anthropic assets are NOT MIT');
+  scanNoForbiddenBrand(ROOT);
 
   // 7. Vendor integrity check
   const vendorOut = execFileSync(process.execPath, [path.join(ROOT, 'tools', 'vendor-baoyu.mjs'), '--check'], {
@@ -160,6 +251,7 @@ function verify() {
     id: manifest.id,
     version: manifest.version,
     hostValidated: Boolean(hostDir),
+    localesChecked: SUPPORTED_LOCALES.length,
     runtimeFilesChecked: requiredFiles.length,
     vendorFiles: vendorReport.actual,
     manifestSha512
