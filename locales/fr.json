@@ -1,0 +1,23 @@
+{
+  "unit.label": "Design",
+  "unit.title": "Ouvrir Agy Design Studio",
+  "unit.opening": "Ouverture…",
+  "unit.openingTitle": "Ouverture d'Agy Design Studio…",
+  "workbench.title": "Agy Design Studio",
+  "workbench.wsDefault": "Espace local",
+  "workbench.wsEmpty": "Aucun espace de travail local",
+  "workbench.loading": "Préparation de l'espace de travail local et de Design Studio…",
+  "workbench.openExternal": "Ouvrir dans le navigateur ↗",
+  "workbench.close": "Fermer",
+  "workbench.retry": "Réessayer",
+  "workbench.openSettings": "Changer le port",
+  "error.titlePort": "Port local occupé par un autre processus",
+  "error.titleWorkspace": "Chemin d'espace de travail restreint",
+  "error.titleGeneric": "Impossible de démarrer Agy Design Studio",
+  "error.fallbackMsg": "Le serveur local de Design Studio n'a pas répondu. Réessayez ou vérifiez les paramètres de port.",
+  "error.noWorkspace": "Aucun espace de travail local actif détecté. Ouvrez un dossier local dans Antigravity et réessayez.",
+  "error.remoteWorkspace": "Le chemin n'est pas accessible localement (distant ou non monté). Design Studio prend uniquement en charge les espaces locaux.",
+  "error.forbiddenPath": "Le chemin actif correspond au répertoire du plugin ou à un dossier système protégé. Passez d'abord à un espace de projet.",
+  "error.portInUse": "Le port de Design Studio est utilisé par un autre processus. Modifiez le port dans les paramètres du plugin et réessayez.",
+  "error.startTimeout": "Le serveur local de Design Studio a expiré ou n'a pas répondu. Réessayez ou consultez les journaux."
+}

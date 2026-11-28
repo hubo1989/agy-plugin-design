@@ -1,0 +1,23 @@
+{
+  "unit.label": "Design",
+  "unit.title": "開啟 Agy Design Studio 設計工作台",
+  "unit.opening": "開啟中…",
+  "unit.openingTitle": "正在開啟 Agy Design Studio…",
+  "workbench.title": "Agy Design Studio",
+  "workbench.wsDefault": "本地工作區",
+  "workbench.wsEmpty": "未開啟本地工作區",
+  "workbench.loading": "正在準備本地工作區與設計工作台…",
+  "workbench.openExternal": "外部瀏覽器開啟 ↗",
+  "workbench.close": "關閉",
+  "workbench.retry": "重試啟動",
+  "workbench.openSettings": "修改連接埠設定",
+  "error.titlePort": "本地連接埠已被其他程式佔用",
+  "error.titleWorkspace": "工作區路徑受限",
+  "error.titleGeneric": "無法啟動 Agy Design Studio",
+  "error.fallbackMsg": "設計工作台本地服務未回應，請重試或檢查連接埠設定。",
+  "error.noWorkspace": "目前未偵測到已開啟的本地工作區，請在 Antigravity 中開啟本地專案資料夾後重試。",
+  "error.remoteWorkspace": "工作區路徑在本機不可見（遠端工作區或未掛載）。設計工作台目前僅支援本地工作區。",
+  "error.forbiddenPath": "目前工作區為外掛安裝目錄或系統路徑，請切換至業務專案工作區後再建立設計作品。",
+  "error.portInUse": "設計工作台連接埠已被其他程式佔用，請在外掛設定中修改連接埠後重試。",
+  "error.startTimeout": "設計工作台本地服務啟動逾時或未回應，請點擊重試或檢查外掛日誌。"
+}

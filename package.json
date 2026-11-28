@@ -1,6 +1,6 @@
 {
   "name": "agy-plugin-design",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": false,
   "description": "Agy Design Studio — Local-first visual design studio plugin for Google Antigravity (Agy-Daddy microkernel v2)",
   "license": "MIT",

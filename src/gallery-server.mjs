@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { guardPost, MAX_BODY_BYTES } from './post-guard.mjs';
 import { buildGalleryHtml } from './gallery-ui.mjs';
+import { normalizeGalleryLocale } from './gallery-locales.mjs';
 
 import {
   SKILLS,
@@ -20,7 +21,6 @@ import {
   RECIPES,
   EDITOR_FILES,
   NOT_CONTENT,
-  LAKALA_TOKENS,
   BUILTIN_EXAMPLES,
   BUILTIN_BY_ID,
   EXAMPLE_TEMPLATES,
@@ -58,17 +58,6 @@ const OFFICIAL_EXAMPLES = BUILTIN_EXAMPLES
     featured: Boolean(item.featured),
     html: item.html || '',
   }));
-
-const DS_COMPONENT_NAMES = ['Cover', 'Button', 'Form', 'Card', 'Navigation'];
-const DS_COMPONENTS = Object.fromEntries(
-  DS_COMPONENT_NAMES
-    .map((name) => {
-      const raw = BUILTIN_BY_ID['claude-design-system']?.files?.[`project/components/${name}/preview.html`];
-      if (!raw) return null;
-      return [name, raw.replace(/^<!--\s*@dsCard[^>]*-->\s*\r?\n?/, '')];
-    })
-    .filter(Boolean),
-);
 
 const TEMPLATES_MAP = Object.fromEntries(Object.keys(EXAMPLE_TEMPLATES).map((id) => [id, true]));
 
@@ -587,6 +576,16 @@ function hostScheme() {
   return '';
 }
 
+function hostLocale() {
+  const explicit = readRawStateFile();
+  if (explicit.hostLocale) {
+    return normalizeGalleryLocale(explicit.hostLocale);
+  }
+  const envLocale = process.env.AGY_HOST_LOCALE?.trim();
+  if (envLocale) return normalizeGalleryLocale(envLocale);
+  return 'zh-CN';
+}
+
 function readState() {
   const explicit = readRawStateFile();
   if (validWsRoot(explicit.workspaceRoot)) {
@@ -720,7 +719,7 @@ function renderPreviewDocument(file, skill) {
   if (skill === 'claude-slides' && !/<!doctype|<html\b/i.test(raw)) {
     return Buffer.from(`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><style>
 *{box-sizing:border-box}
-html,body{margin:0;width:1280px;height:800px;overflow:hidden;background:#0b3875;font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
+html,body{margin:0;width:1280px;height:800px;overflow:hidden;background:#1e293b;font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-font-smoothing:antialiased}
 .slide-stage{width:1920px;height:1080px;transform:scale(0.666667);transform-origin:0 0;position:relative;overflow:hidden}
 .slide-stage > section{width:1920px;height:1080px;position:relative;overflow:hidden}
 x-shape{display:block;pointer-events:none}
@@ -826,6 +825,7 @@ function listArtifactsViews() {
     app: 'agy-plugin-design',
     buildId: GALLERY_BUILD_ID,
     pluginRoot,
+    hostLocale: hostLocale(),
     artifacts: views,
     workspaceName: state.workspaceName || '',
     workspaceRoot,
@@ -941,9 +941,9 @@ async function createExample(templateId, nameInput) {
   return { ok: true, root, skill: skillId, problems };
 }
 
-function galleryHtml(requestedLang = 'zh', requestedScheme = '') {
+function galleryHtml(requestedLang = '', requestedScheme = '') {
   return buildGalleryHtml({
-    requestedLang,
+    requestedLang: normalizeGalleryLocale(requestedLang || hostLocale()),
     requestedScheme,
     resolvedHostScheme: hostScheme(),
     skills: SKILLS,
@@ -951,8 +951,6 @@ function galleryHtml(requestedLang = 'zh', requestedScheme = '') {
     recipes: RECIPES,
     examples: OFFICIAL_EXAMPLES,
     templatesMap: TEMPLATES_MAP,
-    lakalaTokens: LAKALA_TOKENS,
-    dsComponents: DS_COMPONENTS,
   });
 }
 
@@ -1018,7 +1016,7 @@ async function startFromArtifact(input) {
   if (input.example) {
     const example = OFFICIAL_EXAMPLES.find((x) => x.id === String(input.example));
     if (!example) return { ok: false, error: '未知官方示例' };
-    const starter = `${SKILL_BY_ID[example.skill].prompt}${example.desc}\n参考内置设计系统（品牌青 #00B9F1 / 深海蓝 #0B3875 / 交互蓝 #007FA8）与示例要素：${example.points}。请在当前工作区 .design/ 内创建新项目。`;
+    const starter = `${SKILL_BY_ID[example.skill].prompt}${example.desc}\n参考示例要素：${example.points}。请在当前工作区 .design/ 内创建新项目。`;
     return dispatchPromptToHost(starter);
   }
   if (input.recipe) {

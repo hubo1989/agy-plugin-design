@@ -1,6 +1,14 @@
 {
   "title": {
     "zh-CN": "Agy Design Studio 设置",
+    "zh-TW": "Agy Design Studio 設定",
+    "ja": "Agy Design Studio 設定",
+    "ko": "Agy Design Studio 설정",
+    "es": "Configuración de Agy Design Studio",
+    "pt": "Configurações do Agy Design Studio",
+    "fr": "Paramètres d'Agy Design Studio",
+    "ru": "Настройки Agy Design Studio",
+    "it": "Impostazioni di Agy Design Studio",
     "en": "Agy Design Studio Settings"
   },
   "fields": [
@@ -10,47 +18,88 @@
       "default": true,
       "label": {
         "zh-CN": "显示顶栏 Design 入口",
+        "zh-TW": "顯示頂欄 Design 入口",
+        "ja": "トップバーに Design ボタンを表示",
+        "ko": "상단 바에 Design 버튼 표시",
+        "es": "Mostrar botón Design en la barra superior",
+        "pt": "Mostrar botão Design na barra superior",
+        "fr": "Afficher le bouton Design dans la barre supérieure",
+        "ru": "Показывать кнопку Design на верхней панели",
+        "it": "Mostra il pulsante Design nella barra superiore",
         "en": "Show topbar Design capsule"
       },
       "description": {
         "zh-CN": "在 Antigravity 顶栏右侧区域挂载 Design 工作台入口胶囊",
+        "zh-TW": "在 Antigravity 頂欄右側區域掛載 Design 工作台入口膠囊",
+        "ja": "Antigravity トップバー右側に Design スタジオのボタンを表示します",
+        "ko": "Antigravity 상단 바 오른쪽에 Design 스튜디오 버튼을 표시합니다",
+        "es": "Montar el botón de acceso de Design Studio en la parte derecha de la barra superior",
+        "pt": "Exibir o botão de acesso do Design Studio no lado direito da barra superior",
+        "fr": "Afficher le bouton d'accès à Design Studio à droite de la barre supérieure",
+        "ru": "Закрепить кнопку Design Studio в правой части верхней панели Antigravity",
+        "it": "Mostra il pulsante di accesso a Design Studio nella parte destra della barra superiore",
         "en": "Mount the Design Studio capsule in the topbar right cluster"
       }
     },
     {
       "key": "openMode",
       "type": "enum",
-      "default": "embedded",
+      "default": "sidebar",
       "options": [
         {
-          "value": "embedded",
+          "value": "sidebar",
           "label": {
-            "zh-CN": "宿主内嵌工作台（推荐，极速响应）",
-            "en": "Embedded Workbench Drawer (Recommended)"
+            "zh-CN": "右侧侧边栏内",
+            "zh-TW": "右側側邊欄內",
+            "ja": "右サイドバー内",
+            "ko": "오른쪽 사이드바 내부",
+            "es": "En la barra lateral derecha",
+            "pt": "Na barra lateral direita",
+            "fr": "Dans la barre latérale droite",
+            "ru": "В правой боковой панели",
+            "it": "Nella barra laterale destra",
+            "en": "Inside Right Sidebar"
           }
         },
         {
           "value": "browser",
           "label": {
-            "zh-CN": "直接用系统默认浏览器打开",
-            "en": "Open in System Default Browser"
-          }
-        },
-        {
-          "value": "popover",
-          "label": {
-            "zh-CN": "先展开顶栏最近作品快捷卡",
-            "en": "Open Topbar Quick Popover First"
+            "zh-CN": "外置浏览器",
+            "zh-TW": "外部瀏覽器",
+            "ja": "外部ブラウザ",
+            "ko": "외부 브라우저",
+            "es": "Navegador externo",
+            "pt": "Navegador externo",
+            "fr": "Navigateur externe",
+            "ru": "Внешний браузер",
+            "it": "Browser esterno",
+            "en": "External Browser"
           }
         }
       ],
       "label": {
-        "zh-CN": "顶栏点击打开方式",
-        "en": "Topbar click behavior"
+        "zh-CN": "插件打开方式",
+        "zh-TW": "外掛開啟方式",
+        "ja": "プラグインの開き方",
+        "ko": "플러그인 열기 방식",
+        "es": "Modo de apertura",
+        "pt": "Modo de abertura",
+        "fr": "Mode d'ouverture",
+        "ru": "Способ открытия",
+        "it": "Modalità di apertura",
+        "en": "Open mode"
       },
       "description": {
-        "zh-CN": "控制点击顶栏 Design 胶囊时的默认承载容器；内嵌工作台内随时可一键弹出到浏览器",
-        "en": "Default surface when clicking the Design capsule; you can always pop out to browser from the workbench"
+        "zh-CN": "选择在右侧侧边栏内嵌打开或使用外置浏览器打开；侧边栏内也可随时点击弹出到外置浏览器",
+        "zh-TW": "選擇在右側側邊欄內嵌開啟或使用外部瀏覽器開啟；側邊欄內也可隨時點擊彈出到外部瀏覽器",
+        "ja": "右サイドバー内に開くか、外部ブラウザで開くかを選択します（サイドバーからも外部ブラウザへ移動可能）",
+        "ko": "오른쪽 사이드바 내부 또는 외부 브라우저에서 열기를 선택합니다 (사이드바에서 언제든 외부 브라우저로 열 수 있음)",
+        "es": "Elige abrir en la barra lateral derecha o en el navegador externo; también puedes abrir en navegador desde la barra lateral",
+        "pt": "Escolha abrir na barra lateral direita ou no navegador externo; também é possível abrir no navegador pela barra lateral",
+        "fr": "Choisissez d'ouvrir dans la barre latérale droite ou dans le navigateur externe ; vous pouvez aussi ouvrir dans le navigateur à tout moment",
+        "ru": "Выберите открытие в правой боковой панели или во внешнем браузере; из панели всегда можно перейти в браузер",
+        "it": "Scegli se aprire nella barra laterale destra o nel browser esterno; puoi aprire nel browser anche dalla barra laterale",
+        "en": "Open inside the right sidebar or in an external browser; you can also pop out to the external browser from the sidebar"
       }
     },
     {
@@ -61,10 +110,26 @@
       "resetToDefault": true,
       "label": {
         "zh-CN": "打开设计工作台快捷键",
+        "zh-TW": "開啟設計工作台快速鍵",
+        "ja": "デザインスタジオを開くショートカット",
+        "ko": "디자인 스튜디오 열기 단축키",
+        "es": "Atajo para abrir Design Studio",
+        "pt": "Atalho para abrir o Design Studio",
+        "fr": "Raccourci pour ouvrir Design Studio",
+        "ru": "Горячая клавиша Design Studio",
+        "it": "Scorciatoia per aprire Design Studio",
         "en": "Open Design Studio shortcut"
       },
       "description": {
         "zh-CN": "在当前工作区快速唤起或收起设计工作台（留空则禁用快捷键）",
+        "zh-TW": "在目前工作區快速喚起或收合設計工作台（留空則停用快速鍵）",
+        "ja": "現在のワークスペースでデザインスタジオを切り替えます（空欄で無効）",
+        "ko": "현재 작업 영역에서 디자인 스튜디오를 빠르게 토글합니다 (비워 두면 비활성화)",
+        "es": "Alterna Design Studio en el espacio de trabajo activo (déjalo vacío para desactivar)",
+        "pt": "Alterna o Design Studio no workspace ativo (deixe vazio para desativar)",
+        "fr": "Afficher ou masquer Design Studio dans l'espace de travail actif (laisser vide pour désactiver)",
+        "ru": "Быстрое переключение Design Studio в активном рабочем пространстве (оставьте пустым для отключения)",
+        "it": "Mostra o nascondi Design Studio nell'area di lavoro attiva (lascia vuoto per disattivare)",
         "en": "Keyboard shortcut to toggle Design Studio in the active window"
       }
     },
@@ -76,10 +141,26 @@
       "max": 65535,
       "label": {
         "zh-CN": "本地项目库服务端口",
+        "zh-TW": "本地專案庫服務連接埠",
+        "ja": "ローカルギャラリー HTTP ポート",
+        "ko": "로컬 갤러리 HTTP 포트",
+        "es": "Puerto HTTP de la galería local",
+        "pt": "Porta HTTP da galeria local",
+        "fr": "Port HTTP de la galerie locale",
+        "ru": "Локальный HTTP-порт галереи",
+        "it": "Porta HTTP della galleria locale",
         "en": "Local Gallery HTTP port"
       },
       "description": {
         "zh-CN": "仅监听 127.0.0.1；默认 3481 以避开 Orca 设计插件 (3480) 与 Agy-Daddy 内置服务 (18765-18767)",
+        "zh-TW": "僅監聽 127.0.0.1；預設 3481 以避開 Orca 設計外掛 (3480) 與 Agy-Daddy 內建服務 (18765-18767)",
+        "ja": "127.0.0.1 のみで待機します。Orca (3480) と Agy-Daddy (18765-18767) を避けるため既定値は 3481 です",
+        "ko": "127.0.0.1 루프백만 수신합니다. Orca (3480) 및 Agy-Daddy (18765-18767)와 겹치지 않도록 기본값은 3481입니다",
+        "es": "Solo escucha en 127.0.0.1; por defecto 3481 para evitar conflictos con Orca (3480) y Agy-Daddy (18765-18767)",
+        "pt": "Escuta apenas em 127.0.0.1; padrão 3481 para evitar conflito com Orca (3480) e Agy-Daddy (18765-18767)",
+        "fr": "Écoute uniquement sur 127.0.0.1 ; 3481 par défaut pour éviter Orca (3480) et Agy-Daddy (18765-18767)",
+        "ru": "Слушает только 127.0.0.1; по умолчанию 3481 во избежание конфликта с Orca (3480) и Agy-Daddy (18765-18767)",
+        "it": "In ascolto solo su 127.0.0.1; predefinito 3481 per evitare Orca (3480) e Agy-Daddy (18765-18767)",
         "en": "Loopback 127.0.0.1 port; defaults to 3481 to avoid Orca (3480) and Agy-Daddy services (18765-18767)"
       }
     },
@@ -89,10 +170,26 @@
       "default": true,
       "label": {
         "zh-CN": "启动时后台静默预热本地服务",
+        "zh-TW": "啟動時背景靜默預熱本地服務",
+        "ja": "起動時にローカルサーバーをバックグラウンドで事前起動",
+        "ko": "시작 시 백그라운드에서 로컬 서버 사전 준비",
+        "es": "Precargar servidor local al iniciar",
+        "pt": "Pré-aquecer servidor local ao iniciar",
+        "fr": "Préchauffer le serveur local au démarrage",
+        "ru": "Предварительно запускать локальный сервер при старте",
+        "it": "Precarica il server locale all'avvio",
         "en": "Prewarm local server on startup"
       },
       "description": {
         "zh-CN": "插件激活后异步预热本地项目库服务，确保首次点击即可在 500ms 内热开",
+        "zh-TW": "外掛啟用後非同步預熱本地專案庫服務，確保首次點擊即可在 500ms 內快速開啟",
+        "ja": "プラグイン有効化後にローカルサーバーを非同期で事前起動し、初回クリック時の表示を高速化します",
+        "ko": "플러그인 활성화 후 로컬 서버를 비동기로 미리 준비해 첫 클릭 시 빠르게 엽니다",
+        "es": "Precalienta el servidor local de forma asíncrona al iniciar para una apertura instantánea",
+        "pt": "Pré-aquece o servidor local de forma assíncrona na inicialização para abertura instantânea",
+        "fr": "Préchauffe le serveur local de manière asynchrone au démarrage pour une ouverture quasi instantanée",
+        "ru": "Асинхронно подготавливает локальный сервер после запуска для мгновенного открытия",
+        "it": "Precarica il server locale in modo asincrono all'avvio per un'apertura immediata",
         "en": "Prewarm the local gallery server asynchronously on startup for sub-second first open"
       }
     }
@@ -103,6 +200,14 @@
       "command": "design.open",
       "label": {
         "zh-CN": "立即打开设计工作台",
+        "zh-TW": "立即開啟設計工作台",
+        "ja": "今すぐデザインスタジオを開く",
+        "ko": "지금 디자인 스튜디오 열기",
+        "es": "Abrir Design Studio ahora",
+        "pt": "Abrir Design Studio agora",
+        "fr": "Ouvrir Design Studio maintenant",
+        "ru": "Открыть Design Studio сейчас",
+        "it": "Apri Design Studio ora",
         "en": "Open Design Studio Now"
       }
     },
@@ -111,6 +216,14 @@
       "command": "design.restartServer",
       "label": {
         "zh-CN": "重启设计工作台本地服务",
+        "zh-TW": "重啟設計工作台本地服務",
+        "ja": "ローカルギャラリーサーバーを再起動",
+        "ko": "로컬 갤러리 서버 재시작",
+        "es": "Reiniciar servidor de galería local",
+        "pt": "Reiniciar servidor da galeria local",
+        "fr": "Redémarrer le serveur de galerie local",
+        "ru": "Перезапустить локальный сервер галереи",
+        "it": "Riavvia server locale della galleria",
         "en": "Restart Local Gallery Server"
       }
     }
